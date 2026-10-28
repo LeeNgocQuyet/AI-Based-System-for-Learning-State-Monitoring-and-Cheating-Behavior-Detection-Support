@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "event — DRAFT",
+  "description": "DRAFT: requires agreement from Quyết, Huy and Phúc. No behavioral thresholds are defined.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "0.1.0-draft"
+    },
+    "schema_status": {
+      "const": "DRAFT"
+    },
+    "is_synthetic": {
+      "type": "boolean"
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "source": {
+      "enum": [
+        "webcam",
+        "video",
+        "browser"
+      ]
+    },
+    "event_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "event_type": {
+      "enum": [
+        "EYES_CLOSED",
+        "MOUTH_OPEN",
+        "HEAD_TURNED",
+        "FACE_NOT_DETECTED",
+        "MULTIPLE_FACES",
+        "TAB_HIDDEN"
+      ]
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "start_offset_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "end_offset_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "duration_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "severity": {
+      "type": "null",
+      "description": "DRAFT: display priority policy not agreed; not a cheating score."
+    },
+    "evidence": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "first_sequence": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "last_sequence": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "first_sequence",
+            "last_sequence"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "schema_status",
+    "is_synthetic",
+    "session_id",
+    "source_id",
+    "timestamp",
+    "source",
+    "event_id",
+    "event_type",
+    "started_at",
+    "ended_at",
+    "start_offset_ms",
+    "end_offset_ms",
+    "duration_ms",
+    "severity",
+    "evidence"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "source": {
+            "const": "browser"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "event_type": {
+            "const": "TAB_HIDDEN"
+          },
+          "evidence": {
+            "type": "null"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "event_type": {
+            "enum": [
+              "EYES_CLOSED",
+              "MOUTH_OPEN",
+              "HEAD_TURNED",
+              "FACE_NOT_DETECTED",
+              "MULTIPLE_FACES"
+            ]
+          },
+          "evidence": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  ]
+}
