@@ -1,0 +1,23 @@
+{
+  "schema_version": "0.1.0-draft",
+  "schema_status": "DRAFT",
+  "is_synthetic": true,
+  "session_id": "synthetic-session-001",
+  "source_id": "synthetic-camera-001",
+  "timestamp": "2026-01-01T00:00:01.000Z",
+  "source": "webcam",
+  "sequence": 1,
+  "offset_ms": 1000,
+  "quality": "ok",
+  "measurements": {
+    "face_count": 1,
+    "eye_aspect_ratio_left": 0.25,
+    "eye_aspect_ratio_right": 0.26,
+    "mouth_aspect_ratio": 0.12,
+    "head_pose_deg": {
+      "yaw": 8,
+      "pitch": 2,
+      "roll": 1
+    }
+  }
+}

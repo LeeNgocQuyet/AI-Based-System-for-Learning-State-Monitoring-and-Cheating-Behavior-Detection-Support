@@ -1,0 +1,19 @@
+{
+  "schema_version": "0.1.0-draft",
+  "schema_status": "DRAFT",
+  "is_synthetic": true,
+  "session_id": "synthetic-session-001",
+  "source_id": "synthetic-camera-001",
+  "timestamp": "2026-01-01T00:00:02.000Z",
+  "source": "webcam",
+  "sequence": 2,
+  "offset_ms": 2000,
+  "quality": "unavailable",
+  "measurements": {
+    "face_count": null,
+    "eye_aspect_ratio_left": null,
+    "eye_aspect_ratio_right": null,
+    "mouth_aspect_ratio": null,
+    "head_pose_deg": null
+  }
+}

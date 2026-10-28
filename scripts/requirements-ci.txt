@@ -1,0 +1,3 @@
+# Repository validation only; not application dependencies.
+jsonschema[format]==4.23.0
+PyYAML==6.0.2

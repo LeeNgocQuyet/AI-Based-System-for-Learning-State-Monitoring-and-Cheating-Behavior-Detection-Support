@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "raw-signals — DRAFT",
+  "description": "DRAFT: requires agreement from Quyết, Huy and Phúc. No behavioral thresholds are defined.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "0.1.0-draft"
+    },
+    "schema_status": {
+      "const": "DRAFT"
+    },
+    "is_synthetic": {
+      "type": "boolean"
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "source": {
+      "enum": [
+        "webcam",
+        "video"
+      ]
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "offset_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "quality": {
+      "enum": [
+        "ok",
+        "degraded",
+        "unavailable"
+      ]
+    },
+    "measurements": {
+      "type": "object",
+      "properties": {
+        "face_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "eye_aspect_ratio_left": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "eye_aspect_ratio_right": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "mouth_aspect_ratio": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "head_pose_deg": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "yaw": {
+                  "type": "number"
+                },
+                "pitch": {
+                  "type": "number"
+                },
+                "roll": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "yaw",
+                "pitch",
+                "roll"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "face_count",
+        "eye_aspect_ratio_left",
+        "eye_aspect_ratio_right",
+        "mouth_aspect_ratio",
+        "head_pose_deg"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "schema_status",
+    "is_synthetic",
+    "session_id",
+    "source_id",
+    "timestamp",
+    "source",
+    "sequence",
+    "offset_ms",
+    "quality",
+    "measurements"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "quality": {
+            "const": "unavailable"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "measurements": {
+            "properties": {
+              "face_count": {
+                "type": "null"
+              },
+              "eye_aspect_ratio_left": {
+                "type": "null"
+              },
+              "eye_aspect_ratio_right": {
+                "type": "null"
+              },
+              "mouth_aspect_ratio": {
+                "type": "null"
+              },
+              "head_pose_deg": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
