@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EduFocus — Quản lý lớp học & phiên học</title>
+<style>
+:root{--bg:#f6f7f4;--surface:#fff;--surface-soft:#fbfcfa;--ink:#24332f;--muted:#6f7d77;--line:#e4e9e4;--line-strong:#d4ddd5;--primary:#3f725f;--primary-dark:#315d4d;--primary-soft:#eaf2ed;--sage:#dce9df;--blue:#456c91;--blue-soft:#edf3f8;--amber:#a66a24;--amber-soft:#fbf1e4;--red:#ae534b;--red-soft:#faeeeb;--purple:#6d6390;--purple-soft:#f1eff7;--shadow:0 5px 20px rgba(42,65,54,.045);--radius:14px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:14px/1.5 Inter,"Segoe UI",system-ui,-apple-system,sans-serif;color:var(--ink)}button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}.hidden{display:none!important}a{color:var(--primary)}.muted{color:var(--muted)}.tiny{font-size:11px}.small{font-size:12px}.topbar{height:66px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 30px;position:sticky;top:0;z-index:10}.brand{display:flex;align-items:center;gap:10px;font-weight:750;font-size:17px;letter-spacing:-.35px}.brandmark{height:34px;width:34px;border-radius:10px;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:800}.brand-sub{font-size:11px;color:var(--muted);font-weight:450;margin-left:3px}.top-right{display:flex;align-items:center;gap:12px}.user-chip{display:flex;align-items:center;gap:9px;color:#52625b;font-size:12px}.avatar{height:34px;width:34px;border-radius:50%;background:#e4eee7;color:var(--primary-dark);display:grid;place-items:center;font-weight:750}.role-tag{font-size:10px;padding:5px 9px;border-radius:99px;background:#f1f4f1;color:#63736a;font-weight:700}.layout{display:grid;grid-template-columns:230px minmax(0,1fr);max-width:1560px;margin:auto;min-height:calc(100vh - 66px)}.sidebar{padding:22px 14px;border-right:1px solid var(--line);background:#fbfcfa}.side-label{font-size:10px;color:#9aa69f;font-weight:800;letter-spacing:.9px;padding:12px 12px 7px}.nav{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;text-align:left;border-radius:9px;border:0;background:transparent;color:#607068;margin:3px 0;font-size:12px}.nav:hover{background:#f0f4f0}.nav.active{background:var(--primary-soft);color:var(--primary-dark);font-weight:750}.nav-ico{width:18px;text-align:center;font-size:14px}.sidebar-foot{margin:26px 4px 0;padding:12px;border-radius:10px;background:#f0f4f0;color:var(--muted);font-size:10px}.main{padding:28px clamp(18px,3vw,42px) 60px;min-width:0;max-width:1340px;width:100%;margin:0 auto}.page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:22px}.eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--primary);font-weight:800;margin-bottom:6px}.h1{font-size:25px;line-height:1.25;letter-spacing:-.65px;margin:0 0 6px;font-weight:750}.sub{font-size:12px;color:var(--muted);margin:0;max-width:750px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:9px;padding:9px 14px;font-size:12px;font-weight:700;border:1px solid transparent;transition:background .15s,border-color .15s,transform .15s}.btn:hover{transform:translateY(-1px)}.primary{background:var(--primary);color:#fff}.primary:hover{background:var(--primary-dark)}.secondary{background:#fff;border-color:var(--line-strong);color:#44564d}.secondary:hover{background:#f7faf7}.soft{background:var(--primary-soft);color:var(--primary-dark)}.warning-btn{background:var(--amber-soft);color:var(--amber)}.danger{background:var(--red);color:#fff}.ghost{background:transparent;color:var(--primary);padding-left:6px;padding-right:6px}.btn-sm{padding:6px 10px;font-size:11px}.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.pad{padding:18px}.grid{display:grid;gap:14px}.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}.grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}.grid-5{grid-template-columns:repeat(5,minmax(0,1fr))}.row{display:flex;align-items:center;gap:10px}.between{justify-content:space-between}.wrap{flex-wrap:wrap}.section-title{font-size:14px;font-weight:750;margin:0}.section-sub{font-size:11px;color:var(--muted);margin:4px 0 0}.metric{padding:15px 16px}.metric .value{font-size:24px;font-weight:780;letter-spacing:-.6px}.metric .label{font-size:11px;color:var(--muted);margin-top:2px}.metric .hint{font-size:10px;color:#9aa69f;margin-top:6px}.stat-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px}.badge{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:5px 9px;font-size:10px;font-weight:750;white-space:nowrap}.b-green{background:var(--primary-soft);color:var(--primary-dark)}.b-blue{background:var(--blue-soft);color:var(--blue)}.b-amber{background:var(--amber-soft);color:var(--amber)}.b-red{background:var(--red-soft);color:var(--red)}.b-purple{background:var(--purple-soft);color:var(--purple)}.b-grey{background:#f0f3f0;color:#6d7973}.field{display:flex;flex-direction:column;gap:6px;margin-bottom:13px}.field label{font-size:11px;color:#506158;font-weight:700}.input,.select,.textarea{width:100%;border:1px solid var(--line-strong);border-radius:8px;padding:10px 11px;background:#fff;color:var(--ink);outline:none;font-size:12px}.input:focus,.select:focus,.textarea:focus{border-color:#8ba99a;box-shadow:0 0 0 3px #eaf2ed}.field-hint{font-size:10px;color:#89968f}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.notice{border-radius:10px;padding:12px 14px;font-size:11px;display:flex;gap:9px;align-items:flex-start;border:1px solid}.notice.info{background:#f0f5f8;border-color:#e0e9ef;color:#506d80}.notice.good{background:#eff6f0;border-color:#dceade;color:#456b52}.notice.warn{background:#fcf4e9;border-color:#f1e2ca;color:#8b642f}.notice.danger-note{background:#fbefed;border-color:#f1d9d5;color:#9b5149}.mode-icon{height:38px;width:38px;border-radius:11px;display:grid;place-items:center;font-size:17px;background:var(--primary-soft);color:var(--primary-dark)}.course-card{padding:17px;display:flex;flex-direction:column;gap:12px;min-height:176px}.course-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.course-code{font-size:10px;letter-spacing:.5px;color:var(--muted);font-weight:750}.course-name{font-size:15px;font-weight:760;line-height:1.3;margin:4px 0}.course-meta{font-size:11px;color:var(--muted);display:flex;flex-direction:column;gap:3px}.course-actions{display:flex;gap:8px;align-items:center;margin-top:auto;flex-wrap:wrap}.course-strip{height:5px;border-radius:5px;margin:-17px -17px 3px}.live-banner{background:#f0f6f1;border:1px solid #dceade;border-radius:10px;padding:11px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px}.live-banner strong{font-size:11px}.live-banner p{font-size:10px;color:var(--muted);margin:3px 0 0}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:720px}.table th{text-align:left;font-size:10px;color:#829087;font-weight:750;padding:10px 11px;background:#f8faf7;border-bottom:1px solid var(--line);white-space:nowrap}.table td{padding:11px;border-bottom:1px solid #edf0ec;font-size:11px;vertical-align:middle}.table tr:last-child td{border-bottom:0}.table tbody tr:hover{background:#fafcf9}.link-btn{border:0;background:transparent;color:var(--primary);font-weight:750;font-size:11px;padding:3px 0}.link-btn:hover{text-decoration:underline}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.toolbar .input,.toolbar .select{width:auto;min-width:140px}.filter-tabs{display:flex;gap:5px;flex-wrap:wrap}.filter-tab{border:1px solid transparent;border-radius:99px;padding:7px 11px;background:#f2f5f1;color:#66756b;font-size:10px;font-weight:700}.filter-tab.active{background:var(--primary-soft);color:var(--primary-dark);border-color:#d7e6da}.progress-track{height:10px;border-radius:99px;background:#eef1ed;overflow:hidden;display:flex}.progress-track span{height:100%;display:block}.progress-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:10px;color:var(--muted);margin-top:10px}.student-cell{display:flex;align-items:center;gap:9px}.mini-avatar{height:30px;width:30px;border-radius:50%;background:#edf2ee;color:#587362;display:grid;place-items:center;font-size:10px;font-weight:750;flex:0 0 auto}.student-name{font-weight:700;color:#35453d}.student-id{font-size:9px;color:#8a968f}.status-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:11px}.status-row:last-child{border:0}.empty{text-align:center;padding:36px 18px;color:var(--muted)}.empty h3{font-size:14px;color:var(--ink);margin:5px 0}.empty p{font-size:11px;margin:0 0 14px}.auth-wrap{min-height:calc(100vh - 66px);display:grid;place-items:center;padding:25px;background:#f1f4ef}.auth-card{width:min(430px,100%);padding:28px}.auth-card h1{font-size:23px;margin:18px 0 5px}.auth-card .sub{margin-bottom:20px}.demo-box{padding:12px;border-radius:9px;background:#f7f9f6;border:1px solid var(--line);font-size:10px;color:var(--muted);margin-top:16px}.overlay{position:fixed;inset:0;background:#1d2b255c;display:grid;place-items:center;z-index:30;padding:16px}.modal{background:#fff;border-radius:15px;border:1px solid var(--line);padding:22px;width:min(520px,100%);box-shadow:0 24px 80px #14251c30}.modal h3{font-size:17px;margin:0 0 5px}.modal>p{font-size:11px;color:var(--muted);margin:0 0 17px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.toast{position:fixed;bottom:22px;right:22px;z-index:50;padding:12px 16px;border-radius:10px;background:#2f4a3d;color:white;box-shadow:0 10px 35px #1b322650;font-size:11px;max-width:380px}.camera-box{min-height:260px;border-radius:12px;background:#263c34;color:#eff5f0;display:grid;place-items:center;position:relative;overflow:hidden}.camera-box video{width:100%;height:100%;max-height:330px;object-fit:cover}.camera-placeholder{text-align:center;padding:30px;color:#e2ebe4}.camera-placeholder .icon{font-size:34px;margin-bottom:8px}.camera-status{position:absolute;left:12px;bottom:12px;background:#16251eaa;color:#fff;border-radius:99px;padding:5px 9px;font-size:10px}.session-clock{font-size:20px;font-weight:800;letter-spacing:-.5px}.list-stack{display:flex;flex-direction:column;gap:8px}.list-item{padding:10px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:center}.list-item:last-child{border-bottom:0}.split{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,.8fr);gap:14px}.chart-bars{height:150px;display:flex;align-items:flex-end;gap:18px;padding:10px 4px 0;border-bottom:1px solid var(--line)}.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:5px}.chart-bar{width:min(36px,60%);border-radius:6px 6px 0 0;min-height:4px}.footer-note{font-size:10px;color:#89968f;margin-top:14px}.divider{height:1px;background:var(--line);margin:13px 0}.breadcrumb{font-size:10px;color:#849187;margin-bottom:12px}.breadcrumb button{font-size:10px}.signal-timeline{border-left:2px solid #e5ebe5;padding-left:14px;margin:6px 0 0 6px}.signal-timeline article{position:relative;padding:0 0 15px}.signal-timeline article:before{content:"";position:absolute;width:8px;height:8px;border-radius:50%;background:#8da995;left:-19px;top:4px;border:2px solid #fff;box-shadow:0 0 0 1px #cad8cd}.signal-timeline h4{font-size:11px;margin:0 0 3px}.signal-timeline p{font-size:10px;color:var(--muted);margin:0}.notice-count{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 5px;background:#e6eee8;color:var(--primary-dark);border-radius:99px;font-size:10px;font-weight:800}.roster-toolbar{display:flex;gap:9px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:14px 0}.roster-toolbar .input{max-width:260px}.auth-links{display:flex;justify-content:space-between;margin-top:14px}.session-type{display:flex;gap:10px}.session-choice{flex:1;border:1px solid var(--line-strong);padding:13px;border-radius:10px;text-align:left;background:#fff}.session-choice.selected{border-color:var(--primary);background:#f1f6f2}.session-choice strong{display:block;font-size:12px;margin:4px 0}.session-choice span{display:block;color:var(--muted);font-size:10px}.top-summary{display:flex;gap:16px;align-items:center;flex-wrap:wrap}.student-course-card{padding:15px;display:flex;align-items:center;gap:12px}.student-course-card .course-info{min-width:0;flex:1}.student-course-card .course-name{font-size:13px}.student-course-card .course-meta{font-size:10px}.week-label{font-size:10px;color:#8a968f}.hint-link{font-size:10px;color:var(--primary);font-weight:700}.status-chip{font-size:10px;font-weight:700;padding:4px 8px;border-radius:99px}.status-stable{background:var(--primary-soft);color:var(--primary-dark)}.status-attention{background:var(--amber-soft);color:#8a5a20}.status-technical{background:var(--red-soft);color:#a44d45}.status-absent{background:#f1f3f0;color:#78847c}
+@media(max-width:1050px){.grid-4,.grid-5{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}.split{grid-template-columns:1fr}}
+@media(max-width:720px){.topbar{padding:0 14px}.brand-sub{display:none}.layout{grid-template-columns:1fr}.sidebar{display:flex;gap:4px;overflow:auto;padding:8px;border-right:0;border-bottom:1px solid var(--line)}.side-label,.sidebar-foot{display:none}.nav{white-space:nowrap;width:auto;flex:0 0 auto;padding:8px 10px}.main{padding:20px 14px 40px}.page-head{flex-direction:column}.grid-2,.grid-3,.grid-4,.grid-5{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.top-right .user-chip span{display:none}.h1{font-size:22px}.session-type{flex-direction:column}.course-card{min-height:unset}}
+
+/* =========================================================
+   EduFocus · UI/UX refinement layer
+   ========================================================= */
+:root{
+  --bg:#f4f6f3;
+  --surface:#ffffff;
+  --surface-soft:#f9fbf9;
+  --ink:#20342c;
+  --muted:#62736a;
+  --line:#e1e8e2;
+  --line-strong:#cbd8ce;
+  --primary:#3f7661;
+  --primary-dark:#2f604d;
+  --primary-soft:#e8f1eb;
+  --shadow:0 8px 24px rgba(32,52,44,.055);
+  --radius:16px;
+}
+
+html{scroll-behavior:smooth;scroll-padding-top:88px}
+body{font-size:15px;line-height:1.58;background:var(--bg);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button,input,select,textarea{font-size:14px}
+button{transition:background-color .18s ease,border-color .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease}
+
+/* Header */
+.topbar{height:72px;padding:0 clamp(18px,2.4vw,38px);box-shadow:0 1px 0 rgba(25,45,35,.02)}
+.brand{font-size:19px;gap:11px}
+.brandmark{width:38px;height:38px;border-radius:11px;font-size:16px}
+.brand-sub{font-size:12px}
+.top-right{gap:14px}
+.user-chip{font-size:13px}
+.avatar{width:38px;height:38px}
+.role-tag{font-size:11px;padding:6px 11px}
+
+/* Full-bleed application shell: sidebar starts at viewport edge */
+.layout{grid-template-columns:264px minmax(0,1fr);max-width:none;width:100%;margin:0;min-height:calc(100vh - 72px)}
+.sidebar{position:sticky;top:72px;align-self:start;height:calc(100vh - 72px);min-height:540px;overflow-y:auto;padding:26px 17px 24px;background:#fbfcfa;border-right:1px solid var(--line)}
+.side-label{font-size:11px;color:#77877e;letter-spacing:1px;padding:13px 13px 9px}
+.nav{position:relative;gap:12px;padding:12px 13px;margin:4px 0;border-radius:10px;font-size:14px;line-height:1.4;color:#52645a}
+.nav:hover{background:#f0f5f1;color:var(--ink)}
+.nav.active{background:var(--primary-soft);color:var(--primary-dark);font-weight:750}
+.nav.active:before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:0 4px 4px 0;background:var(--primary)}
+.nav-ico{width:20px;font-size:16px}
+.sidebar-foot{margin:30px 4px 0;padding:14px;border:1px solid #e5ece6;border-radius:12px;background:#f3f7f3;font-size:12px;line-height:1.55}
+.main{width:100%;max-width:1680px;margin:0 auto;padding:34px clamp(24px,3.25vw,58px) 72px;min-width:0}
+
+/* Page hierarchy */
+.page-head{align-items:center;margin-bottom:26px;gap:24px}
+.eyebrow{font-size:11px;letter-spacing:1px;margin-bottom:8px}
+.h1{font-size:clamp(28px,2vw,32px);line-height:1.2;letter-spacing:-.8px;margin-bottom:8px}
+.sub{font-size:14px;line-height:1.6;max-width:850px}
+.section-title{font-size:17px;line-height:1.35;letter-spacing:-.15px}
+.section-sub{font-size:13px;line-height:1.5;margin-top:5px}
+
+/* Buttons and interactive states */
+.btn{min-height:40px;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:700}
+.btn-sm{min-height:34px;padding:7px 12px;font-size:12px}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(31,65,48,.09)}
+.btn:active{transform:translateY(0)}
+.btn:focus-visible,.nav:focus-visible,.link-btn:focus-visible,.filter-tab:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(63,118,97,.23);outline-offset:2px}
+.link-btn{font-size:13px;padding:5px 2px}
+
+/* Cards, spacing and summary metrics */
+.card{border-radius:16px;box-shadow:var(--shadow);border-color:var(--line);transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+.pad{padding:22px}
+.grid{gap:18px}
+.metric{padding:20px 21px;min-height:112px}
+.metric .value{font-size:30px;line-height:1.15;letter-spacing:-.8px}
+.metric .label{font-size:14px;line-height:1.4;margin-top:5px;color:#596c61}
+.metric .hint{font-size:12px;line-height:1.45;margin-top:8px;color:#7c8a81}
+.badge{font-size:12px;padding:6px 11px;letter-spacing:.05px}
+.tiny{font-size:12px;line-height:1.45}
+.small{font-size:13px;line-height:1.5}
+.muted{color:var(--muted)}
+
+/* Course cards */
+.course-card{padding:20px;gap:14px;min-height:204px}
+.course-strip{height:5px;margin:-20px -20px 5px}
+.course-code{font-size:12px;letter-spacing:.45px}
+.course-name{font-size:17px;line-height:1.35;margin:5px 0}
+.course-meta{font-size:13px;line-height:1.5;gap:4px}
+.course-actions{gap:9px}
+.course-card:hover{border-color:#cfddd2;box-shadow:0 12px 28px rgba(32,52,44,.085);transform:translateY(-2px)}
+.live-banner{padding:14px 15px;border-radius:12px;gap:16px}
+.live-banner strong{font-size:13px;line-height:1.4}
+.live-banner p{font-size:12px;line-height:1.5;margin-top:4px}
+.notice{padding:13px 15px;border-radius:11px;font-size:13px;line-height:1.55}
+
+/* Forms */
+.field{gap:7px;margin-bottom:16px}
+.field label{font-size:13px}
+.input,.select,.textarea{padding:12px 13px;border-radius:10px;font-size:14px;min-height:44px}
+.field-hint{font-size:12px;line-height:1.5;color:#718078}
+.filter-tab{padding:8px 13px;font-size:12px}
+
+/* Tables and roster data */
+.table{min-width:780px}
+.table th{font-size:12px;padding:13px 14px;color:#64766b}
+.table td{font-size:13px;padding:14px;line-height:1.45}
+.student-cell{gap:11px}
+.mini-avatar{height:34px;width:34px;font-size:11px}
+.student-name{font-size:13px}
+.student-id{font-size:11px;line-height:1.4}
+.status-row{font-size:13px;padding:12px 0;gap:12px}
+.status-chip{font-size:11px;padding:5px 9px}
+.progress-track{height:11px}
+.progress-legend{font-size:12px;gap:16px}
+.roster-toolbar{margin:18px 0 14px;gap:12px}
+.roster-toolbar .input{max-width:320px}
+
+/* Secondary panels, dialogs and feedback */
+.empty{padding:44px 20px}
+.empty h3{font-size:16px}
+.empty p{font-size:13px;line-height:1.5}
+.footer-note{font-size:12px;line-height:1.55}
+.modal{padding:26px;border-radius:17px}
+.modal h3{font-size:19px}
+.modal>p{font-size:13px;line-height:1.55}
+.toast{font-size:13px;line-height:1.45;padding:14px 18px;border-radius:12px}
+.auth-card{padding:32px}
+.auth-card h1{font-size:26px}
+.demo-box{font-size:12px;line-height:1.6}
+
+/* Subtle, consistent scrolling */
+*{scrollbar-width:thin;scrollbar-color:#cbd8ce transparent}
+*::-webkit-scrollbar{width:9px;height:9px}
+*::-webkit-scrollbar-thumb{background:#cbd8ce;border:2px solid transparent;background-clip:padding-box;border-radius:99px}
+*::-webkit-scrollbar-thumb:hover{background:#aebfb2;border:2px solid transparent;background-clip:padding-box}
+
+@media(max-width:1100px){
+  .layout{grid-template-columns:238px minmax(0,1fr)}
+  .sidebar{padding-left:13px;padding-right:13px}
+  .main{padding-left:26px;padding-right:26px}
+  .grid-4,.grid-5{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:820px){
+  .layout{grid-template-columns:210px minmax(0,1fr)}
+  .sidebar{padding:20px 10px}
+  .main{padding:26px 20px 56px}
+  .page-head{align-items:flex-start}
+  .grid-2{grid-template-columns:1fr}
+}
+@media(max-width:720px){
+  .topbar{height:64px;padding:0 14px}
+  .brand{font-size:17px;gap:8px}
+  .brandmark{height:34px;width:34px}
+  .top-right{gap:8px}
+  .top-right .role-tag{display:none}
+  .top-right .user-chip span{display:none}
+  .avatar{height:32px;width:32px}
+  .layout{grid-template-columns:1fr;min-height:calc(100vh - 64px)}
+  .sidebar{position:static;height:auto;min-height:0;display:flex;gap:5px;overflow-x:auto;overflow-y:hidden;padding:9px 12px;border-right:0;border-bottom:1px solid var(--line)}
+  .side-label,.sidebar-foot{display:none}
+  .nav{white-space:nowrap;width:auto;flex:0 0 auto;padding:9px 12px;margin:0;font-size:13px}
+  .nav.active:before{left:8px;right:8px;top:auto;bottom:0;width:auto;height:3px;border-radius:4px 4px 0 0}
+  .main{padding:24px 16px 44px}
+  .page-head{flex-direction:column;gap:14px;margin-bottom:22px}
+  .h1{font-size:26px}
+  .sub{font-size:13px}
+  .grid-2,.grid-3,.grid-4,.grid-5{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .session-type{flex-direction:column}
+  .course-card{min-height:unset}
+  .metric{min-height:unset}
+  .pad{padding:18px}
+  .toolbar{width:100%}
+  .toolbar .input,.toolbar .select{min-width:0;flex:1}
+}
+@media(max-width:420px){
+  .main{padding-left:13px;padding-right:13px}
+  .brand-sub{display:none}
+  .btn{padding:9px 12px;font-size:13px}
+  .course-top{flex-direction:column}
+  .live-banner{align-items:flex-start;flex-direction:column}
+  .live-banner .btn{width:100%}
+  .modal{padding:20px}
+  .modal-actions{flex-direction:column-reverse}
+  .modal-actions .btn{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+
+
+
+/* =========================================================
+   EduFocus · Modern EdTech visual system
+   Product-led, warm, confident; keeps all existing workflows.
+   ========================================================= */
+:root{
+  --bg:#f5f7f3;
+  --surface:#ffffff;
+  --surface-soft:#f8faf6;
+  --ink:#202e29;
+  --muted:#65766d;
+  --line:#e2e9e1;
+  --line-strong:#cbd8ce;
+  --primary:#34745e;
+  --primary-dark:#245744;
+  --primary-soft:#e7f3eb;
+  --sage:#dcefe2;
+  --blue:#456fc0;
+  --blue-soft:#edf3ff;
+  --amber:#99631e;
+  --amber-soft:#fff4df;
+  --red:#b34e49;
+  --red-soft:#fff0ed;
+  --purple:#7662ae;
+  --purple-soft:#f2efff;
+  --shadow:0 4px 16px rgba(37,65,48,.045);
+  --radius:16px;
+}
+body{background:var(--bg);color:var(--ink);font-family:Inter,"Segoe UI",system-ui,-apple-system,sans-serif}
+.topbar{background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom-color:#e4ebe4;box-shadow:0 1px 0 rgba(35,66,49,.025)}
+.brand{letter-spacing:-.45px}
+.brandmark{background:var(--primary);box-shadow:0 4px 9px rgba(52,116,94,.18);border-radius:12px}
+.brand-sub{color:#7b8980}
+.role-tag{background:#eef5ef;color:#3f6b55}
+.avatar{background:#e6f2e9;color:#2f694f}
+.layout{background:var(--bg)}
+.sidebar{background:#f9fbf8;border-right:1px solid #e1e9e1}
+.side-label{color:#84948a;letter-spacing:.9px}
+.nav{color:#52665b;border-radius:11px;min-height:42px;transition:background .16s ease,color .16s ease,transform .16s ease}
+.nav:hover{background:#edf4ed;transform:translateX(2px)}
+.nav.active{background:#e5f2e9;color:#245744;box-shadow:inset 0 0 0 1px #d8e9dc}
+.nav.active:before{background:#34745e;width:3px}
+.nav-ico{display:inline-flex;align-items:center;justify-content:center;flex:0 0 20px;color:currentColor}
+.nav-ico svg{width:18px;height:18px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.sidebar-foot{background:#edf5ee;border-color:#e0ebe1;color:#65786c}
+.main{max-width:none;padding-top:32px}
+.page-head{margin-bottom:28px}
+.eyebrow{color:#34745e;letter-spacing:1.1px}
+.h1{color:#1e3028;letter-spacing:-.9px}
+.sub{color:#64766b}
+.section-title{color:#24382e;letter-spacing:-.25px}
+.card{border-color:#e1e9e1;box-shadow:0 3px 14px rgba(32,60,43,.035);border-radius:16px}
+.card:hover{border-color:#d6e4d8}
+.metric{position:relative;overflow:hidden;background:linear-gradient(145deg,#fff 0%,#fcfefb 100%);border-radius:16px}
+.metric:after{content:"";position:absolute;right:-22px;top:-28px;width:82px;height:82px;border-radius:50%;background:#eaf5ec;opacity:.65;pointer-events:none}
+.metric .value{position:relative;z-index:1;color:#245744;font-size:32px}
+.metric .label{position:relative;z-index:1;color:#455b4e;font-weight:600}
+.metric .hint{position:relative;z-index:1;color:#819087}
+.course-card{position:relative;overflow:hidden;border-radius:17px;background:#fff;gap:15px}
+.course-strip{height:4px;border-radius:0;margin-top:-20px;opacity:.95}
+.course-top{gap:14px}
+.course-code{color:#78887d;font-size:11px;letter-spacing:.65px}
+.course-name{color:#23372c;font-size:18px;letter-spacing:-.25px}
+.course-meta{color:#6a7b70}
+.course-actions{padding-top:2px}
+.live-banner{background:#eef7ef;border-color:#dcebdd;border-radius:13px}
+.live-banner strong{color:#245744}
+.notice.info{background:#f0f6fb;border-color:#e0eaf3;color:#4e6a80}
+.notice.good{background:#edf8ef;border-color:#d7eadb;color:#376a49}
+.notice.warn{background:#fff6e8;border-color:#f4e4c6;color:#855c22}
+.btn{border-radius:11px;min-height:42px;box-shadow:none}
+.btn.primary{background:#34745e;color:#fff;box-shadow:0 3px 7px rgba(52,116,94,.13)}
+.btn.primary:hover{background:#285f4b;box-shadow:0 5px 12px rgba(52,116,94,.2)}
+.btn.secondary{background:#fff;border-color:#d6e1d7;color:#365344}
+.btn.secondary:hover{background:#f4f8f3;border-color:#b9cfbd}
+.btn.soft{background:#e7f3eb;color:#285d47}
+.btn.soft:hover{background:#d9ecdf}
+.link-btn{color:#2f755b}
+.link-btn:hover{color:#204f3e}
+.badge{letter-spacing:.1px}
+.b-green{background:#e5f4e9;color:#286346}
+.b-blue{background:#eaf1ff;color:#3d5fa5}
+.b-amber{background:#fff1d7;color:#87581b}
+.b-red{background:#ffebe8;color:#a4413b}
+.b-purple{background:#f0edff;color:#6752a1}
+.b-grey{background:#f0f3ef;color:#64736a}
+.table th{background:#f5f8f4;color:#6c7e71}
+.table td{border-bottom-color:#edf1eb}
+.table tbody tr:hover{background:#f7fbf6}
+.status-row{border-bottom-color:#edf1eb}
+.input,.select,.textarea{border-color:#d4e0d6;background:#fff}
+.input:focus,.select:focus,.textarea:focus{border-color:#75a98b;box-shadow:0 0 0 3px rgba(91,159,116,.15)}
+.filter-tab{background:#f0f4ef;color:#5f7165}
+.filter-tab.active{background:#e3f2e7;color:#285e46;border-color:#cfe5d4}
+.progress-track{background:#edf2ec}
+.mini-avatar{background:#e7f2e9;color:#32684c}
+.auth-wrap{background:radial-gradient(ellipse at 15% 15%,#e5f2e8 0,transparent 42%),#f5f7f3}
+.auth-card{border-radius:20px;box-shadow:0 16px 50px rgba(35,65,47,.08)}
+.demo-box{background:#f4f8f3;border-color:#e2ebe0}
+.modal{border-radius:19px;box-shadow:0 24px 80px rgba(25,47,34,.22)}
+.overlay{background:rgba(25,43,33,.48);backdrop-filter:blur(3px)}
+.toast{background:#245744;box-shadow:0 12px 34px rgba(24,61,43,.22)}
+.camera-box{background:#e9efeb;border-color:#d9e4dc;border-radius:16px}
+.camera-placeholder .icon{color:#34745e}
+.status-stable{background:#e5f4e9;color:#286346}
+.status-attention{background:#fff1d7;color:#87581b}
+.status-technical{background:#ffebe8;color:#a4413b}
+.status-absent{background:#f0f3ef;color:#64736a}
+::selection{background:#cfe8d6;color:#1e4c36}
+@media(hover:hover){.card.course-card:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(37,72,49,.09)}}
+@media(max-width:820px){.main{padding-top:25px}.metric:after{width:60px;height:60px;right:-18px;top:-20px}}
+@media(max-width:720px){.sidebar{background:#f9fbf8}.nav.active{box-shadow:inset 0 0 0 1px #d8e9dc}.nav:hover{transform:none}.main{padding-top:22px}.metric{padding:18px}.course-name{font-size:17px}}
+@media(prefers-reduced-motion:reduce){.nav:hover,.card.course-card:hover{transform:none}}
+
+
+
+/* =========================================================
+   Class camera wall · Snapshot review · Student live preview
+   Demo-only visual layer: no remote student video is loaded.
+   ========================================================= */
+.section-heading-row{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px}
+.camera-wall-section{margin-bottom:18px;background:linear-gradient(145deg,#fff 0%,#fbfdfb 100%)}
+.camera-wall-summary{display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding:10px 14px;border-radius:13px;background:#edf5ef;color:#285943;min-width:145px}
+.camera-wall-summary strong{font-size:21px;line-height:1.2;letter-spacing:-.5px}
+.camera-wall-summary span{font-size:11px;color:#607568}
+.camera-wall-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:11px 0 15px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:16px}
+.camera-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.camera-legend span{display:inline-flex;align-items:center;gap:6px}
+.legend-dot,.camera-connection i{width:8px;height:8px;border-radius:50%;display:inline-block;background:#91a097}
+.legend-dot.connected,.camera-connection.is-connected i{background:#4e9c70}
+.legend-dot.warning{background:#d99a42}.legend-dot.offline{background:#aab3ad}
+.demo-disclosure{font-size:11px;color:#71847a;background:#f2f6f2;border:1px solid #e2ebe3;border-radius:8px;padding:6px 9px}
+.block-disclosure{display:block;line-height:1.5;margin-top:12px}
+.camera-wall-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+.camera-tile{min-width:0;border:1px solid var(--line);border-radius:13px;overflow:hidden;background:#fff;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.camera-tile:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(33,66,48,.09);border-color:#cfddd2}
+.camera-tile.needs-review{border-color:#ead4ac}
+.camera-tile-preview{display:block;width:100%;padding:0;border:0;background:none;text-align:inherit}
+.camera-tile-info{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 11px 5px}
+.camera-tile-person{display:flex;flex-direction:column;min-width:0;gap:2px}
+.camera-tile-person strong{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.camera-tile-person small{font-size:10px;color:var(--muted)}
+.camera-tile-info .status-chip{flex:0 0 auto;font-size:9px;padding:4px 7px}
+.camera-tile-foot{display:flex;align-items:center;justify-content:space-between;padding:0 11px 9px;gap:8px}
+.camera-connection{font-size:10px;color:#829087;display:inline-flex;align-items:center;gap:5px}
+.camera-connection i{width:6px;height:6px}
+.camera-tile-foot .link-btn{font-size:11px}
+.mock-frame{position:relative;width:100%;aspect-ratio:16/10;overflow:hidden;background:linear-gradient(135deg,#dce9df,#b8d0c0);color:#fff;isolation:isolate}
+.mock-frame.scene-1{background:linear-gradient(135deg,#e6e8d8,#c4d6c7)}
+.mock-frame.scene-2{background:linear-gradient(135deg,#dce5ed,#b7c9d8)}
+.mock-frame.scene-3{background:linear-gradient(135deg,#eadfd5,#d5c4b6)}
+.mock-frame:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,35,29,.12),transparent 36%,transparent 66%,rgba(20,35,29,.3));z-index:2;pointer-events:none}
+.mock-frame-top,.mock-frame-bottom{position:absolute;left:9px;right:9px;display:flex;justify-content:space-between;align-items:center;z-index:4;gap:8px}
+.mock-frame-top{top:8px}.mock-frame-bottom{bottom:8px;font-size:10px;text-shadow:0 1px 4px #1a3328}
+.mock-camera-chip{font-size:8px;letter-spacing:.65px;font-weight:800;padding:4px 6px;border-radius:5px;background:#1c362bcc;color:white}
+.mock-frame-time{font-size:9px;font-weight:800;color:#fff;text-shadow:0 1px 4px #1c3028}
+.mock-scene{position:absolute;inset:0;overflow:hidden}
+.mock-window{position:absolute;top:15%;left:9%;width:27%;height:42%;border-radius:5px;background:linear-gradient(145deg,rgba(255,255,255,.56),rgba(255,255,255,.08));border:5px solid rgba(255,255,255,.2);box-shadow:0 2px 12px rgba(44,71,53,.08)}
+.mock-person{position:absolute;left:50%;bottom:13%;transform:translateX(-50%);width:43%;height:76%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.person-head{width:41%;aspect-ratio:1;border-radius:50%;background:linear-gradient(145deg,#f1cdb2,#c48f76);display:grid;place-items:center;box-shadow:0 3px 9px rgba(42,50,42,.13);z-index:1}
+.person-head span{font-size:10px;font-weight:800;color:#795b4c;background:rgba(255,255,255,.25);border-radius:50%;width:100%;height:100%;display:grid;place-items:center}
+.person-body{width:100%;height:48%;margin-top:-2px;border-radius:48% 48% 9px 9px;background:linear-gradient(115deg,#547e6a,#315b4b);box-shadow:0 6px 14px rgba(35,64,47,.14)}
+.scene-1 .person-body{background:linear-gradient(115deg,#8797c2,#596a98)}.scene-2 .person-body{background:linear-gradient(115deg,#bd926d,#8f624a)}.scene-3 .person-body{background:linear-gradient(115deg,#7f9d9d,#547475)}
+.mock-desk{position:absolute;bottom:0;left:0;right:0;height:13%;background:rgba(69,85,69,.23);border-top:2px solid rgba(255,255,255,.2)}
+.mock-scan-box{position:absolute;left:35%;top:18%;width:30%;height:49%;border:1px solid rgba(255,255,255,.68);border-radius:6px;opacity:.75}
+.mock-frame-watermark{position:absolute;right:8px;top:32px;z-index:4;font-size:7px;letter-spacing:.8px;color:rgba(255,255,255,.72)}
+.mock-frame.is-snapshot .mock-camera-chip{background:#9b672c}.mock-frame.is-snapshot .mock-frame-time{background:#a86d2d;padding:3px 5px;border-radius:4px}
+.mock-frame.is-snapshot .mock-scan-box{border:2px solid rgba(240,178,82,.95);box-shadow:0 0 0 999px rgba(38,45,32,.05)}
+.mock-offline{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;color:#66776d;background:repeating-linear-gradient(135deg,#e7ece8,#e7ece8 10px,#e1e8e2 10px,#e1e8e2 20px);z-index:1}
+.mock-offline-icon{font-size:24px;color:#839188}.mock-offline strong{font-size:12px}.mock-offline small{font-size:9px}
+.mock-frame.is-offline:after{display:none}.mock-frame.is-offline .mock-frame-watermark{color:#8b9890}.mock-frame.is-offline .mock-frame-top{color:#718078}.mock-frame.is-offline .mock-camera-chip{background:#7c8981}
+.camera-wall-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.evidence-section{margin-bottom:18px}
+.snapshot-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.snapshot-card{min-width:0;border:1px solid var(--line);border-radius:13px;overflow:hidden;background:#fff}
+.snapshot-preview{display:block;position:relative;width:100%;padding:0;border:0;background:#e5ece6;text-align:left}
+.snapshot-preview .mock-frame{aspect-ratio:16/9}
+.snapshot-open{position:absolute;right:10px;bottom:10px;z-index:5;padding:6px 9px;border-radius:7px;background:#18362bd9;color:#fff;font-size:10px;font-weight:700;opacity:0;transform:translateY(3px);transition:opacity .18s ease,transform .18s ease}
+.snapshot-preview:hover .snapshot-open,.snapshot-preview:focus-visible .snapshot-open{opacity:1;transform:translateY(0)}
+.snapshot-content{padding:11px 12px 13px}
+.snapshot-content strong{font-size:12px;color:var(--ink)}
+.snapshot-content p{font-size:11px;color:var(--muted);margin:5px 0 3px}
+.snapshot-content small{font-size:10px;color:#859188;line-height:1.45;display:block}
+.evidence-footnote{font-size:11px;line-height:1.5;color:#7d8b82;margin:13px 0 0}
+.evidence-empty{padding:26px 16px}
+.student-live-monitor{margin-bottom:18px}
+.student-monitor-layout{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(260px,.75fr);gap:18px;align-items:stretch}
+.student-live-frame{min-height:300px;aspect-ratio:16/9;position:relative;overflow:hidden;border-radius:13px;background:#dce9df;border:1px solid var(--line)}
+.student-live-frame .mock-frame{height:100%;aspect-ratio:auto}
+.student-live-frame.feed-paused{display:grid;place-items:center;background:#e9eeea}
+.feed-paused-state{display:flex;flex-direction:column;gap:5px;align-items:center;text-align:center;color:#62736a}.feed-paused-state strong{font-size:15px}.feed-paused-state span{font-size:12px}
+.student-monitor-meta{padding:4px 0;display:flex;flex-direction:column;justify-content:center}
+.monitor-person{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.monitor-person .mini-avatar{width:42px;height:42px;font-size:13px}
+.monitor-person div:last-child{display:flex;flex-direction:column;gap:2px}
+.monitor-person strong{font-size:14px}.monitor-person small{font-size:11px;color:var(--muted)}
+.student-detail-lower{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:18px;align-items:start}
+.student-snapshot-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.modal-evidence{width:min(760px,100%);max-height:92vh;overflow:auto}
+.modal-evidence-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:15px}
+.modal-evidence-head h3{font-size:19px;margin:3px 0 4px}.modal-evidence-head p{font-size:12px;color:var(--muted);margin:0}
+.icon-close{border:0;background:#f1f5f1;color:#52665b;border-radius:9px;width:36px;height:36px;font-size:22px;line-height:1}
+.snapshot-modal-frame{border-radius:13px;overflow:hidden;border:1px solid var(--line);background:#e5ece6}
+.snapshot-modal-frame .mock-frame{aspect-ratio:16/9}
+@media(max-width:1180px){.camera-wall-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.student-monitor-layout{grid-template-columns:1fr}.student-live-frame{min-height:260px}.student-monitor-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}.student-monitor-meta .monitor-person,.student-monitor-meta .demo-disclosure,.student-monitor-meta .btn{grid-column:1/-1}}
+@media(max-width:820px){.camera-wall-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.snapshot-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.student-detail-lower{grid-template-columns:1fr}.section-heading-row{align-items:flex-start}.camera-wall-summary{min-width:120px}}
+@media(max-width:560px){.camera-wall-grid,.snapshot-grid,.student-snapshot-grid{grid-template-columns:1fr}.camera-wall-summary{align-items:flex-start}.camera-wall-toolbar{align-items:flex-start;flex-direction:column}.camera-wall-actions{align-items:flex-start;flex-direction:column}.student-monitor-meta{display:flex}.student-live-frame{min-height:210px}.section-heading-row{flex-direction:column}.modal-evidence{padding:17px}}
+@media(max-width:720px){
+ .split{grid-template-columns:minmax(0,1fr)!important;min-width:0}
+ .split>.card,.roster-toolbar,.roster-toolbar>*{min-width:0}
+ .roster-toolbar .input{flex:1 1 100%;max-width:100%;width:100%}
+ .roster-toolbar .filter-tabs{width:100%;min-width:0;flex:1 1 100%;gap:6px}
+ .filter-tabs .filter-tab{flex:0 1 auto}
+ .main,.layout{max-width:100vw;min-width:0}
+}
+@media(prefers-reduced-motion:reduce){.camera-tile,.snapshot-open{transition:none}.camera-tile:hover{transform:none}}
+</style>
+</head>
+<body>
+<div id="app"></div><div id="modal-root"></div><div id="toast-root"></div>
+<script>
+(()=>{
+'use strict';
+const app=document.getElementById('app'),modalRoot=document.getElementById('modal-root'),toastRoot=document.getElementById('toast-root');
+const KEY='edufocus-class-prototype-v2';
+const DEMO_PASSWORD='12345678';
+const names=['Nguyễn Minh An','Trần Thu Hà','Lê Quốc Bảo','Phạm Ngọc Linh','Hoàng Đức Anh','Vũ Khánh Vy','Đặng Minh Quân','Bùi Phương Thảo','Đỗ Hải Nam','Ngô Mai Anh','Phan Gia Huy','Dương Hoàng Yến','Hồ Nhật Minh','Võ Thanh Tâm','Lý Bảo Ngọc','Mai Tuấn Kiệt','Đinh Hà My','Cao Minh Đức','Tạ Quỳnh Anh','Trương Gia Bảo','Nguyễn Anh Thư','Trần Đức Mạnh','Lê Hoài Phương','Phạm Thành Đạt','Hoàng Ngọc Mai','Vũ Anh Khoa','Đặng Thu Trang','Bùi Quốc Khánh','Đỗ Minh Châu','Ngô Đức Long','Phan Thảo Nhi','Dương Tuấn Anh','Hồ Phương Linh','Võ Minh Hiếu','Lý Thanh Trúc','Mai Đức Thịnh','Đinh Bảo Châu','Cao Anh Tuấn','Tạ Minh Khôi','Trương Khánh Linh','Nguyễn Hà Anh','Trần Quang Huy'];
+const courseSeed=[
+{id:'HCI-K25.2',code:'INT3306',name:'Tương tác người máy',section:'K25.2',students:42,teacher:'ThS. Nguyễn Minh Khôi',schedule:'Thứ 3 · 09:00–11:30',room:'E3-302',color:'#6d8f7d'},
+{id:'OOP-K25.2',code:'INT2204',name:'Lập trình hướng đối tượng',section:'K25.2',students:38,teacher:'ThS. Nguyễn Minh Khôi',schedule:'Thứ 4 · 13:30–16:00',room:'G2-204',color:'#8c9bba'},
+{id:'DBI-K25.2',code:'INT2210',name:'Cơ sở dữ liệu',section:'K25.2',students:45,teacher:'ThS. Nguyễn Minh Khôi',schedule:'Thứ 6 · 07:30–10:00',room:'G3-105',color:'#c69a69'},
+{id:'WEB-K25.1',code:'INT3308',name:'Phát triển ứng dụng Web',section:'K25.1',students:36,teacher:'ThS. Nguyễn Minh Khôi',schedule:'Thứ 6 · 13:30–16:00',room:'E3-401',color:'#b07e82'}
+];
+const makeRoster=(course)=>Array.from({length:course.students},(_,i)=>({id:`24${String(20001+i).padStart(5,'0')}`,name:names[i%names.length],status:'absent',joinedAt:'',lastSignal:'Chưa tham gia phiên',events:[]}));
+const defaultData=()=>({courses:courseSeed.map(c=>({...c,roster:makeRoster(c)})),sessions:[],attendanceSeeded:false,studentCourseIds:['HCI-K25.2','OOP-K25.2','DBI-K25.2'],user:null});
+let db=load();
+const state={user:null,route:'login',selectedCourseId:'HCI-K25.2',selectedSessionId:null,selectedStudentId:null,rosterFilter:'all',rosterQuery:'',cameraStream:null,cameraReady:false,privacyAccepted:false,elapsed:0,timer:null,paused:false,alertVariant:'A',cameraError:'',sessionFilter:'all',classCameraExpanded:false,teacherFeedPaused:false};
+function load(){try{const v=JSON.parse(localStorage.getItem(KEY));if(v&&Array.isArray(v.courses)&&Array.isArray(v.sessions))return v}catch(e){}return defaultData()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){}}
+const $=(q,root=document)=>root.querySelector(q),$$=(q,root=document)=>[...root.querySelectorAll(q)];
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const initials=s=>String(s||'?').split(/\s+/).slice(-2).map(x=>x[0]||'').join('').toUpperCase();
+const btn=(label,action,cls='primary',extra='')=>`<button type="button" class="btn ${cls}" data-action="${action}" ${extra}>${label}</button>`;
+const badge=(label,cls='b-grey')=>`<span class="badge ${cls}">${esc(label)}</span>`;
+const head=(eyebrow,title,sub,right='')=>`<div class="page-head"><div><div class="eyebrow">${eyebrow}</div><h1 class="h1">${title}</h1><p class="sub">${sub}</p></div>${right?`<div class="toolbar">${right}</div>`:''}</div>`;
+function course(id){return db.courses.find(c=>c.id===id)}
+function activeSession(courseId){return db.sessions.find(s=>s.courseId===courseId&&s.status==='Đang diễn ra')||null}
+function selectedCourse(){return course(state.selectedCourseId)||db.courses[0]}
+function selectedSession(){return db.sessions.find(s=>s.id===state.selectedSessionId)||null}
+function sessionForCourse(courseId){return db.sessions.filter(s=>s.courseId===courseId).sort((a,b)=>b.startedAt.localeCompare(a.startedAt))}
+function toast(msg){toastRoot.innerHTML=`<div class="toast">${esc(msg)}</div>`;clearTimeout(toast._t);toast._t=setTimeout(()=>toastRoot.innerHTML='',3200)}
+function modal(title,body,actions=''){modalRoot.innerHTML=`<div class="overlay" data-action="overlay-close"><div class="modal" role="dialog" aria-modal="true" onclick="event.stopPropagation()"><h3>${title}</h3><p>${body}</p>${actions}</div></div>`}
+function closeModal(){modalRoot.innerHTML=''}
+function role(){return state.user?.role||null}
+function routeTo(r){if(!state.user){state.route=r==='register'?'register':r==='forgot'?'forgot':'login';render();return}const teacherRoutes=['teacher-home','teacher-course','teacher-session','teacher-student','teacher-reports'];const studentRoutes=['student-home','student-course','student-prepare','student-live','student-history','student-summary'];if(teacherRoutes.includes(r)&&role()!=='teacher'){toast('Khu vực này dành cho giảng viên.');return}if(studentRoutes.includes(r)&&role()!=='student'){toast('Khu vực này dành cho sinh viên.');return}state.route=r;closeModal();render();window.scrollTo({top:0,behavior:'smooth'})}
+function logout(){stopCamera();clearInterval(state.timer);state.timer=null;state.user=null;state.route='login';state.selectedSessionId=null;save();render()}
+function stopCamera(){if(state.cameraStream){state.cameraStream.getTracks().forEach(t=>t.stop());state.cameraStream=null}state.cameraReady=false}
+function shell(content,active=''){const teacher=role()==='teacher';const items=teacher?[['teacher-home','<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>','Tổng quan'],['teacher-reports','<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19H21"/><path d="m7 15 4-4 3 2 5-6"/></svg>','Báo cáo']]:[['student-home','<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7"/><path d="M5 9v12h14V9M9 21v-7h6v7"/></svg>','Trang chủ'],['student-history','<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>','Lịch sử của tôi']];return `<header class="topbar"><div class="brand"><div class="brandmark">E</div><span>EduFocus</span><span class="brand-sub">Cổng học tập</span></div><div class="top-right"><span class="role-tag">${teacher?'Giảng viên':'Sinh viên'}</span><div class="user-chip"><div class="avatar">${esc(initials(state.user.name))}</div><span>${esc(state.user.name)}</span></div>${btn('Đăng xuất','logout','secondary btn-sm')}</div></header><div class="layout"><aside class="sidebar"><div class="side-label">KHÔNG GIAN LÀM VIỆC</div>${items.map((it,i)=>`<button class="nav ${active===it[0]?'active':''}" data-route="${it[0]}"><span class="nav-ico">${it[1]}</span>${it[2]}</button>`).join('')}<div class="side-label" style="margin-top:22px">${teacher?'LỚP PHỤ TRÁCH':'LỚP ĐANG THEO HỌC'}</div>${(teacher?db.courses:db.courses.filter(c=>db.studentCourseIds.includes(c.id))).map(c=>`<button class="nav" data-action="${teacher?'open-course':'open-student-course'}" data-id="${c.id}"><span class="nav-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21z"/><path d="M4 5.5v13A2.5 2.5 0 0 1 6.5 16H20"/></svg></span><span style="overflow:hidden;text-overflow:ellipsis">${esc(c.name)}</span></button>`).join('')}<div class="sidebar-foot"><strong>EduFocus</strong><br>Thông tin lớp và phiên trong bản demo dùng dữ liệu minh họa. Trạng thái quan sát không thay thế đánh giá của giảng viên.</div></aside><main class="main">${content}</main></div>`}
+function loginPage(){return `<header class="topbar"><div class="brand"><div class="brandmark">E</div><span>EduFocus</span><span class="brand-sub">Cổng học tập</span></div><span class="role-tag">Bản demo tương tác</span></header><div class="auth-wrap"><div class="card auth-card"><div class="brand"><div class="brandmark">E</div><span>EduFocus</span></div><h1>Chào mừng bạn quay lại</h1><p class="sub">Đăng nhập để xem lớp học phần và các phiên đang diễn ra.</p><form id="login-form"><div class="field"><label for="login-email">Email</label><input class="input" id="login-email" type="email" required placeholder="you@example.com"></div><div class="field"><label for="login-password">Mật khẩu</label><input class="input" id="login-password" type="password" required placeholder="Nhập mật khẩu"></div><div id="login-error" class="notice danger-note hidden">Thông tin đăng nhập chưa đúng.</div><button class="btn primary" style="width:100%;margin-top:8px" type="submit">Đăng nhập</button></form><div class="auth-links"><button class="link-btn" data-route="forgot">Quên mật khẩu?</button><button class="link-btn" data-route="register">Đăng ký sinh viên</button></div><div class="demo-box"><strong>Tài khoản dùng thử</strong><br>Giảng viên: <b>teacher@demo.test</b> / 12345678<br>Sinh viên: <b>student@demo.test</b> / 12345678<br><span>Vai trò lấy từ tài khoản; không có bộ chọn vai trò.</span><br><button type="button" class="link-btn" data-action="reset-demo">Đặt lại dữ liệu demo</button></div><p class="footer-note">Mẹo thử luồng: đăng nhập giảng viên, mở một phiên cho lớp Tương tác người máy; sau đó đăng xuất và đăng nhập sinh viên để thấy thông báo lớp đang diễn ra.</p></div></div>`}
+function registerPage(){return `<header class="topbar"><div class="brand"><div class="brandmark">E</div>EduFocus</div><button class="btn secondary" data-route="login">Quay lại</button></header><div class="auth-wrap"><div class="card auth-card"><div class="eyebrow">TÀI KHOẢN SINH VIÊN</div><h1>Tạo tài khoản</h1><p class="sub">Tài khoản đăng ký công khai mặc định là sinh viên.</p><form id="register-form"><div class="field"><label>Họ và tên</label><input id="reg-name" class="input" required placeholder="Nguyễn Văn A"></div><div class="field"><label>Email</label><input id="reg-email" class="input" type="email" required placeholder="you@example.com"></div><div class="field"><label>Mật khẩu</label><input id="reg-pass" class="input" type="password" minlength="8" required></div><div class="field"><label>Nhập lại mật khẩu</label><input id="reg-confirm" class="input" type="password" required></div><div id="reg-error" class="notice danger-note hidden"></div><button class="btn primary" style="width:100%" type="submit">Tạo tài khoản sinh viên</button></form><p class="footer-note">Giảng viên được cấp tài khoản từ hệ thống, không tự đăng ký vai trò giảng viên.</p></div></div>`}
+function forgotPage(){return `<header class="topbar"><div class="brand"><div class="brandmark">E</div>EduFocus</div><button class="btn secondary" data-route="login">Quay lại</button></header><div class="auth-wrap"><div class="card auth-card"><div class="eyebrow">KHÔI PHỤC TÀI KHOẢN</div><h1>Quên mật khẩu?</h1><p class="sub">Nhập email để nhận hướng dẫn đặt lại mật khẩu.</p><form id="forgot-form"><div class="field"><label>Email</label><input class="input" type="email" id="forgot-email" required></div><button class="btn primary" style="width:100%" type="submit">Gửi hướng dẫn</button><div id="forgot-result" class="notice good hidden" style="margin-top:12px">Đã tiếp nhận yêu cầu. Nếu email phù hợp, hướng dẫn đặt lại mật khẩu sẽ được gửi.</div></form></div></div>`}
+function statsForSession(s){const p=s?.participants||[];return{total:p.length,joined:p.filter(x=>x.status!=='absent').length,stable:p.filter(x=>x.status==='stable').length,attention:p.filter(x=>x.status==='attention').length,technical:p.filter(x=>x.status==='technical').length,absent:p.filter(x=>x.status==='absent').length}}
+function statusBadge(status){const map={stable:['Đang ổn định','status-stable'],attention:['Cần xem xét','status-attention'],technical:['Lỗi thiết bị','status-technical'],absent:['Chưa tham gia','status-absent']};const [label,cls]=map[status]||['Chưa cập nhật','status-absent'];return `<span class="status-chip ${cls}">${label}</span>`}
+function teacherHome(){const active=db.sessions.filter(s=>s.status==='Đang diễn ra');const totalStudents=db.courses.reduce((a,c)=>a+c.students,0);return shell(`${head('KHÔNG GIAN GIẢNG VIÊN',`Chào ${esc(state.user.name)}`,'Quản lý các lớp học phần, mở phiên học hoặc phiên thi và theo dõi tình hình tham gia của sinh viên.',btn('Xem báo cáo','teacher-reports','secondary'))}<div class="grid grid-3" style="margin-bottom:18px"><div class="card metric"><div class="value">${db.courses.length}</div><div class="label">Lớp học phần đang phụ trách</div><div class="hint">Các lớp được phân công cho tài khoản này</div></div><div class="card metric"><div class="value">${active.length}</div><div class="label">Phiên đang diễn ra</div><div class="hint">Có thể xem điểm danh theo từng lớp</div></div><div class="card metric"><div class="value">${totalStudents}</div><div class="label">Tổng lượt sinh viên thuộc lớp</div><div class="hint">Một sinh viên có thể học nhiều lớp</div></div></div><div class="row between wrap" style="margin-bottom:12px"><div><h2 class="section-title">Lớp học phần của tôi</h2><p class="section-sub">Chọn một lớp để xem sĩ số, mở phiên và quản lý buổi học.</p></div>${badge(`${db.courses.length} lớp phụ trách`,'b-green')}</div><div class="grid grid-2">${db.courses.map(c=>teacherCourseCard(c)).join('')}</div><div class="card pad" style="margin-top:18px"><div class="row between"><div><h2 class="section-title">Các phiên gần đây</h2><p class="section-sub">Tổng hợp từ các lớp bạn phụ trách.</p></div><button class="link-btn" data-route="teacher-reports">Xem tất cả →</button></div>${recentSessionsTable(db.sessions.slice().sort((a,b)=>b.startedAt.localeCompare(a.startedAt)).slice(0,5))}</div>`,'teacher-home')}
+function teacherCourseCard(c){const s=activeSession(c.id);return `<article class="card course-card"><div class="course-strip" style="background:${c.color}"></div><div class="course-top"><div><div class="course-code">${esc(c.code)} · ${esc(c.section)}</div><div class="course-name">${esc(c.name)}</div><div class="course-meta"><span>${esc(c.schedule)} · ${esc(c.room)}</span><span>${c.students} sinh viên · ${esc(c.teacher)}</span></div></div>${s?badge('Đang mở phiên','b-green'):badge('Chưa mở phiên','b-grey')}</div>${s?`<div class="live-banner"><div><strong>${s.type==='exam'?'Phiên thi':'Phiên học'} đang diễn ra</strong><p>${esc(s.title)} · ${statsForSession(s).joined}/${c.students} đã tham gia</p></div>${btn('Mở dashboard','view-session','soft','data-id="'+s.id+'"')}</div>`:`<div class="notice info"><span>i</span><span>Chưa có phiên nào đang mở. Bạn có thể mở phiên học hoặc phiên thi để điểm danh.</span></div>`}<div class="course-actions">${btn('Mở lớp','open-course','secondary','data-id="'+c.id+'"')}${s?btn('Xem phiên','view-session','soft','data-id="'+s.id+'"'):btn('Mở phiên mới','open-course-session','primary','data-id="'+c.id+'"')}</div></article>`}
+function classOverview(c){const s=activeSession(c.id);const sessionsFor=sessionForCourse(c.id);return shell(`<div class="breadcrumb"><button class="link-btn" data-route="teacher-home">Lớp học phần</button> / ${esc(c.code)}</div>${head('LỚP HỌC PHẦN',esc(c.name),`${esc(c.code)} · ${esc(c.section)} · ${c.students} sinh viên · ${esc(c.schedule)} · ${esc(c.room)}`,s?btn('Xem dashboard phiên','view-session','primary','data-id="'+s.id+'"'):btn('＋ Mở phiên học / thi','open-session-modal','primary'))}<div class="grid grid-3" style="margin-bottom:16px"><div class="card metric"><div class="value">${c.students}</div><div class="label">Sĩ số lớp</div><div class="hint">Danh sách sinh viên được ghi danh</div></div><div class="card metric"><div class="value">${sessionsFor.length}</div><div class="label">Phiên đã tổ chức</div><div class="hint">Học tập và kiểm tra</div></div><div class="card metric"><div class="value">${s?statsForSession(s).joined:0}</div><div class="label">Đã tham gia phiên hiện tại</div><div class="hint">${s?'Cập nhật khi sinh viên vào lớp':'Chưa có phiên đang diễn ra'}</div></div></div>${s?activeSessionOverview(c,s):`<div class="card pad"><div class="row between wrap"><div><h2 class="section-title">Chưa có phiên đang diễn ra</h2><p class="section-sub">Mở phiên học hoặc phiên thi để sinh viên trong lớp nhận được thông báo và tham gia.</p></div>${btn('Mở phiên học / thi','open-session-modal','primary')}</div><div class="notice info" style="margin-top:15px">Sau khi mở phiên, thông báo sẽ xuất hiện ở trang chủ của sinh viên đã đăng ký lớp này. Từng sinh viên được tính là đã tham gia khi tự vào phiên.</div></div>`}<div class="card pad" style="margin-top:16px"><div class="row between"><div><h2 class="section-title">Lịch sử phiên của lớp</h2><p class="section-sub">Xem các phiên học và phiên thi đã kết thúc.</p></div>${badge(`${sessionsFor.length} phiên`,'b-grey')}</div>${recentSessionsTable(sessionsFor)}</div>`,'teacher-home')}
+
+function studentSnapshots(p){
+ const types=/Nhắm mắt|Nhìn lệch|Cúi gục|Cúi đầu|Rời khỏi màn hình|Dấu hiệu cần xem lại/i;
+ return (p?.events||[]).map((e,index)=>({...e,index})).filter(e=>e.snapshotAvailable||types.test(e.type));
+}
+function mockCameraFrame(name,status,index=0,variant='tile'){
+ const offline=status==='technical'||status==='absent';
+ const labels={technical:'Camera gián đoạn',absent:'Chưa tham gia',attention:'Tín hiệu cần xem lại',stable:'Đang kết nối'};
+ return `<div class="mock-frame scene-${index%4} ${offline?'is-offline':''} ${variant==='snapshot'?'is-snapshot':''}">
+  <div class="mock-frame-top"><span class="mock-camera-chip">${offline?'CAMERA OFFLINE':variant==='snapshot'?'FRAME DEMO':'LIVE · DEMO'}</span><span class="mock-frame-time">${variant==='snapshot'?'ẢNH MINH HỌA':'●'}</span></div>
+  ${offline?`<div class="mock-offline"><span class="mock-offline-icon">${status==='technical'?'⌁':'◌'}</span><strong>${labels[status]||'Không có tín hiệu'}</strong><small>Không có hình ảnh trong bản demo</small></div>`:`<div class="mock-scene"><div class="mock-window"></div><div class="mock-person"><div class="person-head"><span>${esc(initials(name))}</span></div><div class="person-body"></div></div><div class="mock-desk"></div><div class="mock-scan-box"></div></div><div class="mock-frame-bottom"><span>${esc(name)}</span><span>${labels[status]||'Đang kết nối'}</span></div>`}
+  <span class="mock-frame-watermark">EDUFOCUS · DEMO</span>
+ </div>`;
+}
+function cameraTile(p,s,index){
+ const joined=p.status!=='absent'&&p.status!=='technical';
+ return `<article class="camera-tile ${p.status==='attention'?'needs-review':''}"><button class="camera-tile-preview" type="button" data-action="view-student" data-student="${p.id}" data-session="${s.id}" aria-label="Mở chi tiết ${esc(p.name)}">${mockCameraFrame(p.name,p.status,index)}</button><div class="camera-tile-info"><div class="camera-tile-person"><strong>${esc(p.name)}</strong><small>${esc(p.id)}</small></div>${statusBadge(p.status)}</div><div class="camera-tile-foot"><span class="camera-connection ${joined?'is-connected':''}"><i></i>${joined?'Đã kết nối':'Ngoại tuyến'}</span><button class="link-btn" data-action="view-student" data-student="${p.id}" data-session="${s.id}">Chi tiết</button></div></article>`;
+}
+function classCameraWall(s){
+ const priority={attention:0,stable:1,technical:2,absent:3};
+ const ordered=[...s.participants].sort((a,b)=>(priority[a.status]??4)-(priority[b.status]??4));
+ const visible=state.classCameraExpanded?ordered:ordered.slice(0,8);
+ const connected=s.participants.filter(p=>p.status==='stable'||p.status==='attention').length;
+ return `<section class="card pad camera-wall-section"><div class="section-heading-row"><div><div class="eyebrow">THEO DÕI LỚP HỌC</div><h2 class="section-title">Camera toàn lớp</h2><p class="section-sub">Tổng quan trạng thái kết nối của ${s.participants.length} sinh viên trong phiên.</p></div><div class="camera-wall-summary"><strong>${connected}/${s.participants.length}</strong><span>camera mô phỏng kết nối</span></div></div><div class="camera-wall-toolbar"><div class="camera-legend"><span><i class="legend-dot connected"></i>Đang kết nối</span><span><i class="legend-dot warning"></i>Cần xem lại</span><span><i class="legend-dot offline"></i>Ngoại tuyến</span></div><span class="demo-disclosure">ⓘ Luồng hình ảnh được mô phỏng cho demo UI/UX</span></div><div class="camera-wall-grid">${visible.map((p,i)=>cameraTile(p,s,i)).join('')}</div>${ordered.length>8?`<div class="camera-wall-actions"><span class="muted small">${state.classCameraExpanded?'Đang hiển thị toàn bộ lớp':`Đang xem ${visible.length}/${ordered.length} sinh viên`}</span><button class="btn secondary btn-sm" data-action="toggle-camera-wall">${state.classCameraExpanded?'Thu gọn danh sách':'Xem toàn bộ '+ordered.length+' sinh viên'}</button></div>`:''}</section>`;
+}
+function snapshotCard(p,e,s,index){
+ return `<article class="snapshot-card"><button class="snapshot-preview" data-action="view-snapshot" data-student="${p.id}" data-session="${s.id}" data-event-index="${e.index}" aria-label="Xem ảnh chụp của ${esc(p.name)}">${mockCameraFrame(p.name,'attention',index,'snapshot')}<span class="snapshot-open">⌕ Xem ảnh</span></button><div class="snapshot-content"><div class="row between wrap"><strong>${esc(e.type)}</strong>${badge('Cần xem lại','b-amber')}</div><p>${esc(p.name)} · ${esc(e.time)}</p><small>${esc(e.description||'Tín hiệu minh họa được ghi nhận trong phiên.')}</small></div></article>`;
+}
+function classEvidenceGallery(s){
+ const items=s.participants.flatMap(p=>studentSnapshots(p).map(e=>({p,e}))).slice(0,6);
+ return `<section class="card pad evidence-section"><div class="section-heading-row"><div><div class="eyebrow">MINH CHỨNG SỰ KIỆN</div><h2 class="section-title">Ảnh chụp cần xem lại</h2><p class="section-sub">Ảnh chụp minh họa gắn với các tín hiệu cần giảng viên kiểm tra thêm.</p></div>${badge(`${items.length} ảnh minh họa`,'b-amber')}</div>${items.length?`<div class="snapshot-grid">${items.map((x,i)=>snapshotCard(x.p,x.e,s,i)).join('')}</div>`:`<div class="empty evidence-empty"><h3>Chưa có ảnh chụp cần xem lại</h3><p>Thử tạo dữ liệu điểm danh minh họa để xem các tình huống mẫu.</p></div>`}<p class="evidence-footnote">Ảnh trong bản demo là khung hình giao diện dựng sẵn, không phải ảnh thật được ghi từ webcam sinh viên.</p></section>`;
+}
+function studentEvidenceGallery(p,s){
+ const items=studentSnapshots(p);
+ return `<section class="card pad"><div class="section-heading-row"><div><div class="eyebrow">LỊCH SỬ HÌNH ẢNH</div><h2 class="section-title">Ảnh chụp tại thời điểm có tín hiệu</h2><p class="section-sub">Chọn một ảnh để xem khung hình và ngữ cảnh sự kiện.</p></div>${badge(`${items.length} ảnh`,'b-amber')}</div>${items.length?`<div class="snapshot-grid student-snapshot-grid">${items.map((e,i)=>snapshotCard(p,e,s,i)).join('')}</div>`:`<div class="empty"><h3>Chưa có ảnh chụp</h3><p>Các ảnh chụp minh họa sẽ xuất hiện khi sinh viên có sự kiện được đánh dấu cần xem lại.</p></div>`}</section>`;
+}
+function openSnapshotModal(studentId,sessionId,eventIndex){
+ const s=db.sessions.find(x=>x.id===sessionId),p=s?.participants.find(x=>x.id===studentId),e=p?.events[Number(eventIndex)];
+ if(!s||!p||!e){toast('Không tìm thấy ảnh minh họa.');return;}
+ const c=course(s.courseId);
+ modalRoot.innerHTML=`<div class="overlay" data-action="overlay-close"><div class="modal modal-evidence" role="dialog" aria-modal="true" onclick="if(!event.target.closest('[data-action]'))event.stopPropagation()"><div class="modal-evidence-head"><div><span class="eyebrow">MINH CHỨNG SỰ KIỆN · DEMO</span><h3>${esc(e.type)}</h3><p>${esc(p.name)} · ${esc(e.time)} · ${esc(c?.name||'')}</p></div><button class="icon-close" data-action="close-modal" aria-label="Đóng">×</button></div><div class="snapshot-modal-frame">${mockCameraFrame(p.name,'attention',Number(eventIndex),'snapshot')}</div><div class="notice info" style="margin-top:16px">${esc(e.description||'Đây là hình ảnh mô phỏng được tạo cho bản demo UI/UX, không phải dữ liệu camera thực.')}</div><div class="modal-actions"><button class="btn secondary" data-action="close-modal">Đóng</button><button class="btn primary" data-action="view-student" data-student="${p.id}" data-session="${s.id}">Mở hồ sơ sinh viên</button></div></div></div>`;
+}
+function studentLiveMonitor(p){
+ const feedAvailable=p.status==='stable'||p.status==='attention';
+ return `<section class="card pad student-live-monitor"><div class="section-heading-row"><div><div class="eyebrow">CAMERA CÁ NHÂN</div><h2 class="section-title">Theo dõi camera sinh viên</h2><p class="section-sub">Khung xem trực tiếp được mô phỏng trong prototype.</p></div>${badge(state.teacherFeedPaused?'Đã tạm dừng xem':'LIVE · MÔ PHỎNG',state.teacherFeedPaused?'b-grey':'b-green')}</div><div class="student-monitor-layout"><div class="student-live-frame ${state.teacherFeedPaused?'feed-paused':''}">${state.teacherFeedPaused?`<div class="feed-paused-state"><strong>Đã tạm dừng khung xem</strong><span>Nhấn tiếp tục để xem mô phỏng.</span></div>`:mockCameraFrame(p.name,p.status,2,'live')}</div><div class="student-monitor-meta"><div class="monitor-person"><div class="mini-avatar">${esc(initials(p.name))}</div><div><strong>${esc(p.name)}</strong><small>${esc(p.id)}</small></div></div><div class="status-row"><span>Tình trạng camera</span><strong>${feedAvailable?'Đang kết nối (demo)':p.status==='technical'?'Gián đoạn':'Chưa tham gia'}</strong></div><div class="status-row"><span>Trạng thái phiên</span>${statusBadge(p.status)}</div><div class="status-row"><span>Lần cập nhật mô phỏng</span><strong>Vừa cập nhật</strong></div><button class="btn ${state.teacherFeedPaused?'primary':'secondary'}" data-action="toggle-student-feed" style="width:100%;margin-top:14px">${state.teacherFeedPaused?'Tiếp tục xem':'Tạm dừng xem'}</button><small class="demo-disclosure block-disclosure">Prototype chỉ minh họa bố cục camera cá nhân. Không có luồng video thật từ thiết bị sinh viên.</small></div></div></section>`;
+}
+
+function activeSessionOverview(c,s){const st=statsForSession(s);const pct=x=>st.total?x/st.total*100:0;return `<div class="card pad session-overview-top" style="margin-bottom:15px"><div class="row between wrap"><div><div class="row wrap">${badge(s.type==='exam'?'PHIÊN THI':'PHIÊN HỌC',s.type==='exam'?'b-purple':'b-green')}${badge('Đang diễn ra','b-green')}</div><h2 class="section-title" style="font-size:19px;margin-top:8px">${esc(s.title)}</h2><p class="section-sub">Mã phiên ${esc(s.id)} · Bắt đầu ${esc(s.startedLabel)} · Thời lượng dự kiến ${s.duration} phút</p></div><div class="toolbar">${btn('Mô phỏng điểm danh lớp','seed-attendance','secondary',s.attendanceSeeded?'disabled':'')}${btn('Kết thúc phiên','confirm-end-session','danger','data-id="'+s.id+'"')}</div></div><div class="notice info" style="margin-top:14px">Các trạng thái và hình ảnh trong dashboard là dữ liệu minh họa. “Cần xem lại” là tín hiệu để kiểm tra ngữ cảnh, không phải kết luận sinh viên mất tập trung hay vi phạm.</div></div><div class="grid grid-5" style="margin-bottom:18px"><div class="card metric"><div class="value">${st.total}</div><div class="label">Sĩ số lớp</div></div><div class="card metric"><div class="value" style="color:var(--primary)">${st.joined}</div><div class="label">Đã tham gia</div></div><div class="card metric"><div class="value" style="color:var(--primary)">${st.stable}</div><div class="label">Tín hiệu ổn định</div></div><div class="card metric"><div class="value" style="color:var(--amber)">${st.attention}</div><div class="label">Cần xem xét</div></div><div class="card metric"><div class="value" style="color:var(--red)">${st.technical+st.absent}</div><div class="label">Lỗi thiết bị / chưa vào</div></div></div>${classCameraWall(s)}${classEvidenceGallery(s)}<div class="split" style="margin-top:18px"><div class="card pad"><div class="row between"><div><h2 class="section-title">Tình hình tham gia của cả lớp</h2><p class="section-sub">Theo dõi sĩ số và trạng thái từng sinh viên.</p></div><span class="small muted">${st.joined}/${st.total} đã tham gia</span></div><div class="progress-track" style="margin-top:18px"><span style="width:${pct(st.stable)}%;background:#6b967c"></span><span style="width:${pct(st.attention)}%;background:#d7a458"></span><span style="width:${pct(st.technical)}%;background:#c9766d"></span><span style="width:${pct(st.absent)}%;background:#dce2dc"></span></div><div class="progress-legend"><span><i class="stat-dot" style="background:#6b967c"></i>Ổn định (${st.stable})</span><span><i class="stat-dot" style="background:#d7a458"></i>Cần xem xét (${st.attention})</span><span><i class="stat-dot" style="background:#c9766d"></i>Lỗi thiết bị (${st.technical})</span><span><i class="stat-dot" style="background:#dce2dc"></i>Chưa tham gia (${st.absent})</span></div><div class="divider"></div><div class="row between"><h3 class="section-title">Danh sách sinh viên</h3>${badge('Nhấn vào tên để xem chi tiết','b-grey')}</div><div class="roster-toolbar"><input class="input" id="roster-search" value="${esc(state.rosterQuery)}" placeholder="Tìm tên hoặc mã sinh viên"><div class="filter-tabs">${[['all','Tất cả'],['stable','Ổn định'],['attention','Cần xem xét'],['technical','Lỗi thiết bị'],['absent','Chưa tham gia']].map(([v,l])=>`<button class="filter-tab ${state.rosterFilter===v?'active':''}" data-roster-filter="${v}">${l}</button>`).join('')}</div></div><div id="roster-table">${rosterRows(s,c)}</div></div><div class="card pad"><div class="row between"><div><h2 class="section-title">Những bạn cần xem lại</h2><p class="section-sub">Danh sách rút gọn để giảng viên kiểm tra.</p></div>${badge(`${st.attention+st.technical}`,'b-amber')}</div>${attentionList(s,c)}<div class="divider"></div><h3 class="section-title">Thông tin phiên</h3><div class="status-row"><span>Loại phiên</span><strong>${s.type==='exam'?'Phiên thi':'Phiên học'}</strong></div><div class="status-row"><span>Thời gian bắt đầu</span><strong>${esc(s.startedLabel)}</strong></div><div class="status-row"><span>Trạng thái</span>${badge('Đang diễn ra','b-green')}</div><div class="status-row"><span>Mã lớp</span><strong>${esc(c.id)}</strong></div>${btn('Xem báo cáo phiên','open-class-report','secondary','data-id="'+s.id+'" style="width:100%;margin-top:13px"')}</div></div>`}
+function rosterRows(s,c){const q=state.rosterQuery.toLowerCase();const rows=s.participants.filter(p=>(state.rosterFilter==='all'||p.status===state.rosterFilter)&&(!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q)));return rows.length?`<div class="table-wrap"><table class="table" style="min-width:580px"><thead><tr><th>Sinh viên</th><th>Trạng thái</th><th>Tham gia lúc</th><th>Tín hiệu gần nhất</th><th></th></tr></thead><tbody>${rows.map(p=>`<tr><td><div class="student-cell"><div class="mini-avatar">${esc(initials(p.name))}</div><div><div class="student-name">${esc(p.name)}</div><div class="student-id">${esc(p.id)}</div></div></div></td><td>${statusBadge(p.status)}</td><td>${esc(p.joinedAt||'—')}</td><td>${esc(p.lastSignal||'—')}</td><td><button class="link-btn" data-action="view-student" data-student="${p.id}" data-session="${s.id}">Chi tiết</button></td></tr>`).join('')}</tbody></table></div>`:`<div class="empty"><h3>Không có sinh viên phù hợp</h3><p>Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.</p><button class="link-btn" data-action="reset-roster-filter">Xóa bộ lọc</button></div>`}
+function attentionList(s,c){const arr=s.participants.filter(p=>p.status==='attention'||p.status==='technical').slice(0,8);return arr.length?`<div class="list-stack" style="margin-top:12px">${arr.map(p=>`<div class="list-item"><div class="student-cell"><div class="mini-avatar">${esc(initials(p.name))}</div><div><div class="student-name">${esc(p.name)}</div><div class="student-id">${esc(p.lastSignal)}</div></div></div><button class="link-btn" data-action="view-student" data-student="${p.id}" data-session="${s.id}">Xem</button></div>`).join('')}</div>`:`<div class="empty" style="padding:25px 5px"><h3>Chưa có trường hợp cần xem lại</h3><p>Danh sách sẽ cập nhật khi có tín hiệu hoặc lỗi thiết bị.</p></div>`}
+function recentSessionsTable(rows){return rows.length?`<div class="table-wrap" style="margin-top:12px"><table class="table"><thead><tr><th>Phiên</th><th>Lớp học phần</th><th>Loại</th><th>Bắt đầu</th><th>Đã tham gia</th><th>Trạng thái</th><th></th></tr></thead><tbody>${rows.map(s=>{const c=course(s.courseId),st=statsForSession(s);return `<tr><td><strong>${esc(s.title)}</strong><div class="student-id">${esc(s.id)}</div></td><td>${esc(c?.name||'')}</td><td>${s.type==='exam'?'Thi':'Học tập'}</td><td>${esc(s.startedLabel)}</td><td>${st.joined}/${st.total}</td><td>${badge(s.status,s.status==='Đang diễn ra'?'b-green':'b-grey')}</td><td><button class="link-btn" data-action="view-session" data-id="${s.id}">Xem dashboard →</button></td></tr>`}).join('')}</tbody></table></div>`:`<div class="empty"><h3>Chưa có phiên nào</h3><p>Các phiên bạn mở sẽ xuất hiện tại đây.</p></div>`}
+function teacherSession(s){const c=course(s.courseId);if(s.status==='Đang diễn ra')return classOverview(c);const st=statsForSession(s);return shell(`<div class="breadcrumb"><button class="link-btn" data-action="open-course" data-id="${c.id}">${esc(c.name)}</button> / Chi tiết phiên</div>${head('CHI TIẾT PHIÊN',esc(s.title),`${esc(c.name)} · ${s.type==='exam'?'Phiên thi':'Phiên học'} · ${esc(s.startedLabel)}`,btn('Quay lại lớp','open-course','secondary','data-id="'+c.id+'"'))}<div class="grid grid-4"><div class="card metric"><div class="value">${st.total}</div><div class="label">Sĩ số lớp</div></div><div class="card metric"><div class="value">${st.joined}</div><div class="label">Đã tham gia</div></div><div class="card metric"><div class="value">${st.attention}</div><div class="label">Cần xem xét</div></div><div class="card metric"><div class="value">${st.technical}</div><div class="label">Lỗi thiết bị</div></div></div><div class="grid grid-2" style="margin-top:15px"><div class="card pad"><h2 class="section-title">Danh sách sinh viên</h2>${rosterRows(s,c)}</div><div class="card pad"><h2 class="section-title">Sự kiện của phiên</h2>${s.events.length?`<div class="signal-timeline">${s.events.map(e=>`<article><h4>${esc(e.time)} · ${esc(e.type)}</h4><p>${esc(e.description)}</p></article>`).join('')}</div>`:`<div class="empty"><h3>Chưa có sự kiện</h3></div>`}</div></div><div class="footer-note">Báo cáo chỉ tổng hợp dữ liệu đã ghi nhận trong phiên.</div>`, 'teacher-home')}
+function teacherStudentDetail(){const s=selectedSession(),p=s?.participants.find(x=>x.id===state.selectedStudentId);const c=s?course(s.courseId):null;if(!s||!p)return `<div class="empty"><h3>Không tìm thấy thông tin sinh viên</h3>${btn('Quay lại lớp','teacher-course','secondary')}</div>`;return shell(`<div class="breadcrumb"><button class="link-btn" data-action="view-session" data-id="${s.id}">${esc(c.name)} · Dashboard phiên</button> / Chi tiết sinh viên</div>${head('CHI TIẾT SINH VIÊN',esc(p.name),`${esc(p.id)} · ${esc(c.name)} · ${esc(s.title)}`,btn('Quay lại dashboard lớp','view-session','secondary','data-id="'+s.id+'"'))}<div class="grid grid-3" style="margin-bottom:18px"><div class="card metric"><div class="value">${statusBadge(p.status)}</div><div class="label">Trạng thái hiện tại</div></div><div class="card metric"><div class="value">${esc(p.joinedAt||'—')}</div><div class="label">Thời điểm tham gia</div></div><div class="card metric"><div class="value">${p.events.length}</div><div class="label">Sự kiện trong phiên</div></div></div>${studentLiveMonitor(p)}<div class="student-detail-lower">${studentEvidenceGallery(p,s)}<div class="card pad"><h2 class="section-title">Lịch sử tín hiệu</h2><p class="section-sub">Các sự kiện được ghi nhận trong phiên, sắp xếp theo thứ tự phát sinh.</p>${p.events.length?`<div class="signal-timeline" style="margin-top:16px">${p.events.map(e=>`<article><h4>${esc(e.time)} · ${esc(e.type)}</h4><p>${esc(e.description)}</p></article>`).join('')}</div>`:`<div class="empty"><h3>Chưa có sự kiện</h3><p>Không có tín hiệu nào được ghi nhận trong dữ liệu demo.</p></div>`}<div class="divider"></div><h3 class="section-title">Thông tin và cách diễn giải</h3><div class="status-row"><span>Lớp</span><strong>${esc(c.name)}</strong></div><div class="status-row"><span>Phiên</span><strong>${esc(s.title)}</strong></div><div class="status-row"><span>Loại</span><strong>${s.type==='exam'?'Phiên thi':'Phiên học'}</strong></div><div class="status-row"><span>Tình trạng tham gia</span>${statusBadge(p.status)}</div><div class="notice info" style="margin-top:14px">Camera và ảnh chụp trên trang này đều là mô phỏng UI/UX. Trong sản phẩm thực tế, cần có thông báo, sự đồng ý phù hợp, phân quyền truy cập và chính sách lưu trữ dữ liệu rõ ràng.</div></div></div>`,'teacher-home')}
+function openSessionModal(){const c=selectedCourse();modal('Mở phiên cho lớp học phần',`Lớp ${esc(c.code)} · ${esc(c.name)}. Sinh viên đã đăng ký lớp sẽ thấy thông báo trên trang chủ.`, `<form id="create-session-form"><div class="field"><label>Loại phiên</label><div class="session-type"><label class="session-choice selected"><input type="radio" name="session-type" value="study" checked> <strong>Phiên học</strong><span>Điểm danh và theo dõi trạng thái trong buổi học.</span></label><label class="session-choice"><input type="radio" name="session-type" value="exam"> <strong>Phiên thi</strong><span>Ghi nhận thêm sự kiện chuyển tab nếu trình duyệt hỗ trợ.</span></label></div></div><div class="field"><label for="session-title">Tên buổi học / bài kiểm tra</label><input id="session-title" class="input" required placeholder="Ví dụ: Buổi 06 — Kiểm thử khả dụng" value="${new Date().toLocaleDateString('vi-VN')} — ${c.name}"></div><div class="form-grid"><div class="field"><label for="session-duration">Thời lượng dự kiến</label><select class="select" id="session-duration"><option value="45">45 phút</option><option value="60" selected>60 phút</option><option value="90">90 phút</option><option value="120">120 phút</option></select></div><div class="field"><label for="session-note">Ghi chú cho sinh viên</label><input class="input" id="session-note" placeholder="Ví dụ: Chuẩn bị webcam"></div></div><div class="notice info">Khi mở phiên, thông báo sẽ hiển thị cho sinh viên thuộc lớp này. Sinh viên tự bấm “Vào phiên” để được ghi nhận tham gia.</div><div class="modal-actions"><button type="button" class="btn secondary" data-action="close-modal">Hủy</button><button type="submit" class="btn primary">Mở phiên ngay</button></div></form>`)}
+function studentHome(){const cs=db.courses.filter(c=>db.studentCourseIds.includes(c.id));const live=cs.map(c=>({c,s:activeSession(c.id)})).filter(x=>x.s);const recent=db.sessions.filter(s=>db.studentCourseIds.includes(s.courseId)).sort((a,b)=>b.startedAt.localeCompare(a.startedAt)).slice(0,4);return shell(`${head('KHÔNG GIAN SINH VIÊN',`Xin chào, ${esc(state.user.name)}`,'Xem các lớp học phần bạn đang theo học. Khi giảng viên mở phiên, thông báo sẽ xuất hiện ngay tại lớp tương ứng.',btn('Lịch sử học tập','student-history','secondary'))}${live.length?`<div class="card pad" style="margin-bottom:18px"><div class="row between wrap"><div><div class="eyebrow">THÔNG BÁO LỚP ĐANG DIỄN RA</div><h2 class="section-title">Bạn có ${live.length} phiên đang mở</h2><p class="section-sub">Chọn lớp để xem thông tin và tham gia phiên.</p></div>${badge('Đang diễn ra','b-green')}</div><div class="grid grid-2" style="margin-top:13px">${live.map(({c,s})=>`<div class="live-banner"><div><strong>${esc(c.name)}</strong><p>${s.type==='exam'?'Phiên thi':'Phiên học'} · ${esc(s.title)}</p></div>${btn('Vào lớp','open-student-course','primary','data-id="'+c.id+'"')}</div>`).join('')}</div></div>`:''}<div class="row between wrap" style="margin-bottom:12px"><div><h2 class="section-title">Lớp học phần của tôi</h2><p class="section-sub">Bạn có thể theo dõi nhiều lớp học phần trong cùng một học kỳ.</p></div>${badge(`${cs.length} lớp đã đăng ký`,'b-grey')}</div><div class="grid grid-2">${cs.map(c=>studentCourseCard(c)).join('')}</div><div class="card pad" style="margin-top:18px"><div class="row between"><div><h2 class="section-title">Hoạt động gần đây</h2><p class="section-sub">Các phiên học và thi thuộc lớp bạn tham gia.</p></div><button class="link-btn" data-route="student-history">Xem lịch sử →</button></div>${recent.length?`<div class="list-stack" style="margin-top:10px">${recent.map(s=>{const c=course(s.courseId);return `<div class="list-item"><div><strong style="font-size:11px">${esc(c.name)}</strong><div class="small muted">${esc(s.title)} · ${esc(s.startedLabel)}</div></div>${badge(s.status,s.status==='Đang diễn ra'?'b-green':'b-grey')}</div>`}).join('')}</div>`:`<div class="empty"><h3>Chưa có hoạt động</h3><p>Các phiên bạn tham gia sẽ xuất hiện tại đây.</p></div>`}</div>`,'student-home')}
+function studentCourseCard(c){const s=activeSession(c.id);const latest=sessionForCourse(c.id)[0];return `<article class="card course-card"><div class="course-strip" style="background:${c.color}"></div><div class="course-top"><div><div class="course-code">${esc(c.code)} · ${esc(c.section)}</div><div class="course-name">${esc(c.name)}</div><div class="course-meta"><span>${esc(c.teacher)}</span><span>${esc(c.schedule)} · ${esc(c.room)}</span></div></div>${s?badge('Có phiên mới','b-green'):badge('Đã đăng ký','b-grey')}</div>${s?`<div class="live-banner"><div><strong>${s.type==='exam'?'Giảng viên đã mở phiên thi':'Giảng viên đang mở phiên học'}</strong><p>${esc(s.title)}${s.note?' · '+esc(s.note):''}</p></div>${btn('Vào phiên','join-course-session','primary','data-id="'+s.id+'"')}</div>`:`<div class="small muted">${latest?`Hoạt động gần nhất: ${esc(latest.title)} · ${esc(latest.startedLabel)}`:'Chưa có phiên học nào được mở.'}</div>`}<div class="course-actions">${btn('Xem lớp học phần','open-student-course','secondary','data-id="'+c.id+'"')}${s?btn('Tham gia','join-course-session','soft','data-id="'+s.id+'"'):''}</div></article>`}
+function studentCourseOverview(c){const s=activeSession(c.id);const hist=sessionForCourse(c.id);return shell(`<div class="breadcrumb"><button class="link-btn" data-route="student-home">Lớp học phần của tôi</button> / ${esc(c.code)}</div>${head('LỚP HỌC PHẦN',esc(c.name),`${esc(c.code)} · ${esc(c.section)} · ${esc(c.teacher)} · ${esc(c.schedule)}`,btn('Về trang chủ','student-home','secondary'))}${s?`<div class="card pad" style="margin-bottom:15px"><div class="live-banner"><div><div class="row wrap">${badge(s.type==='exam'?'PHIÊN THI':'PHIÊN HỌC',s.type==='exam'?'b-purple':'b-green')}${badge('Đang diễn ra','b-green')}</div><h2 class="section-title" style="margin-top:8px">${esc(s.title)}</h2><p>${esc(s.note||'Giảng viên đang mở phiên cho lớp. Hãy tham gia để được ghi nhận điểm danh.')}</p><p class="tiny muted">Bắt đầu ${esc(s.startedLabel)} · Dự kiến ${s.duration} phút</p></div>${btn('Vào phiên ngay','join-course-session','primary','data-id="'+s.id+'"')}</div></div>`:`<div class="notice info" style="margin-bottom:15px">Hiện chưa có phiên nào đang diễn ra. Khi giảng viên mở phiên, thông báo sẽ xuất hiện tại đây.</div>`}<div class="grid grid-2"><div class="card pad"><h2 class="section-title">Thông tin học phần</h2><div class="status-row"><span>Mã học phần</span><strong>${esc(c.code)}</strong></div><div class="status-row"><span>Lớp</span><strong>${esc(c.section)}</strong></div><div class="status-row"><span>Giảng viên</span><strong>${esc(c.teacher)}</strong></div><div class="status-row"><span>Lịch học</span><strong>${esc(c.schedule)}</strong></div><div class="status-row"><span>Phòng</span><strong>${esc(c.room)}</strong></div></div><div class="card pad"><h2 class="section-title">Phiên gần đây</h2>${hist.length?`<div class="list-stack" style="margin-top:8px">${hist.slice(0,4).map(x=>`<div class="list-item"><div><strong class="small">${esc(x.title)}</strong><div class="tiny muted">${esc(x.startedLabel)} · ${x.type==='exam'?'Thi':'Học tập'}</div></div>${badge(x.status,x.status==='Đang diễn ra'?'b-green':'b-grey')}</div>`).join('')}</div>`:`<div class="empty"><h3>Chưa có phiên</h3><p>Chưa có hoạt động được ghi nhận cho học phần này.</p></div>`}</div></div>`,'student-home')}
+function studentPrepare(){const s=selectedSession(),c=s?course(s.courseId):null;if(!s||s.status!=='Đang diễn ra')return shell(`<div class="empty"><h3>Phiên học không còn hoạt động</h3>${btn('Về trang chủ','student-home','secondary')}</div>`,'student-home');return shell(`<div class="breadcrumb"><button class="link-btn" data-route="student-home">Trang chủ</button> / ${esc(c.name)} / Tham gia phiên</div>${head(s.type==='exam'?'CHUẨN BỊ PHIÊN THI':'CHUẨN BỊ PHIÊN HỌC',esc(s.title),`${esc(c.name)} · ${esc(s.startedLabel)} · Giảng viên ${esc(c.teacher)}`,btn('Quay lại lớp','open-student-course','secondary','data-id="'+c.id+'"'))}<div class="grid grid-2"><div class="card pad"><h2 class="section-title">Trước khi vào phiên</h2><p class="small muted">${s.type==='exam'?'Trong phiên thi, hệ thống có thể ghi nhận trạng thái camera và sự kiện trang chuyển sang trạng thái không hiển thị.':'Camera được sử dụng để hiển thị xem trước và hỗ trợ ghi nhận một số tín hiệu trong phiên học.'}</p><div class="notice info" style="margin:13px 0">Dữ liệu được dùng trong phạm vi phiên học phần. Bạn có thể chủ động rời phiên theo hướng dẫn.</div><div class="field"><label>Camera</label><div class="row wrap">${btn('Bật camera','request-camera','primary')}${btn('Dùng chế độ mô phỏng','simulate-camera-ready','secondary')}${btn('Thử lại','request-camera','ghost')}</div><span id="camera-message" class="field-hint">Camera chưa được kiểm tra.</span></div><label class="row small" style="align-items:flex-start;gap:8px"><input id="privacy-check" type="checkbox" ${state.privacyAccepted?'checked':''}> Tôi đã đọc thông tin về camera và đồng ý tham gia phiên.</label><div style="margin-top:18px">${btn('Vào phiên','start-student-session','primary','id="join-session-button" disabled')}</div></div><div class="card pad"><h2 class="section-title">Xem trước camera</h2><div class="camera-box" style="margin-top:12px"><video id="camera-video" class="hidden" autoplay playsinline muted></video><div class="camera-placeholder" id="camera-placeholder"><div class="icon">▣</div><strong>Camera chưa bật</strong><p class="tiny">Bật camera hoặc chọn chế độ mô phỏng để tiếp tục.</p></div><span class="camera-status" id="camera-overlay">Chưa kết nối</span></div><div class="status-row"><span>Thiết bị</span><strong id="camera-state-label">Chưa kiểm tra</strong></div><div class="status-row"><span>Quyền truy cập</span><strong id="permission-state-label">Chưa yêu cầu</strong></div><div class="status-row"><span>Điều kiện tham gia</span><strong id="ready-state-label">Chưa sẵn sàng</strong></div></div></div>`,'student-home')}
+function studentLive(){
+ const s=selectedSession(),c=s?course(s.courseId):null,p=s?.participants.find(x=>x.id===state.user.studentId);
+ if(!s||!c)return shell(`<div class="empty"><h3>Không tìm thấy phiên</h3>${btn('Trang chủ','student-home','secondary')}</div>`,'student-home');
+ if(s.status!=='Đang diễn ra')return studentSummary(s);
+ return shell(`${head(s.type==='exam'?'PHIÊN THI ĐANG DIỄN RA':'PHIÊN HỌC ĐANG DIỄN RA',esc(s.title),`${esc(c.name)} · ${esc(s.startedLabel)} · ${badge('Đã ghi nhận tham gia','b-green')}`,btn('Về lớp học phần','open-student-course','secondary','data-id="'+c.id+'"'))}<div class="grid grid-2"><div class="card pad"><div class="row between"><h2 class="section-title">Camera của bạn</h2>${badge(state.paused?'Đang tạm dừng':'Đang tham gia',state.paused?'b-amber':'b-green')}</div><div class="camera-box" style="margin-top:12px"><video id="live-video" class="${state.cameraStream?'':'hidden'}" autoplay playsinline muted></video><div class="camera-placeholder ${state.cameraStream?'hidden':''}"><div class="icon">▣</div><strong>${state.cameraStream?'Camera đang bật':'Chế độ minh họa'}</strong><p class="tiny">Camera của bạn không được phát trực tiếp lên màn hình giảng viên trong bản demo.</p></div><span class="camera-status">${state.cameraStream?'Camera đã kết nối':'Mô phỏng camera'}</span></div><div class="row between" style="margin-top:14px"><div><div class="tiny muted">Thời gian trong phiên</div><div class="session-clock" id="session-clock">${formatTime(state.elapsed)}</div></div><div class="toolbar">${state.paused?btn('Tiếp tục','resume-student','primary'):btn('Tạm dừng','pause-student','secondary')}${btn('Rời phiên','leave-student-session','secondary')}</div></div></div><div class="card pad"><h2 class="section-title">Thông tin phiên</h2><div class="status-row"><span>Học phần</span><strong>${esc(c.name)}</strong></div><div class="status-row"><span>Loại phiên</span><strong>${s.type==='exam'?'Phiên thi':'Phiên học'}</strong></div><div class="status-row"><span>Trạng thái điểm danh</span>${badge('Đã tham gia','b-green')}</div><div class="status-row"><span>Trạng thái camera</span>${badge(state.cameraStream?'Đang kết nối':'Mô phỏng','b-green')}</div><div class="notice warn" style="margin-top:15px"><span>i</span><span>${state.alertVariant==='A'?'Hệ thống ghi nhận dấu hiệu bạn đã nhắm mắt trong một khoảng thời gian. Hãy kiểm tra lại trạng thái của mình.':'Bạn vẫn ổn chứ? Có thể bạn đang mệt. Hãy điều chỉnh tư thế hoặc nghỉ ngắn nếu cần.'}</span></div><div class="row wrap" style="margin-top:12px">${btn('Thử cảnh báo A','alert-a',state.alertVariant==='A'?'soft':'secondary')}${btn('Thử cảnh báo B','alert-b',state.alertVariant==='B'?'soft':'secondary')}${btn('Tạo tín hiệu minh họa','add-student-event','secondary')}</div></div></div><div class="footer-note">Tín hiệu trong phiên chỉ mang tính hỗ trợ. Không dùng một cảnh báo đơn lẻ để kết luận về mức độ tập trung.</div>`,'student-home');
+}
+function studentSummary(s){
+ const c=course(s.courseId),p=s.participants.find(x=>x.id===state.user.studentId),events=p?.events||[];
+ return shell(`${head('TỔNG KẾT PHIÊN','Phiên đã kết thúc',`${esc(c?.name||'')} · ${esc(s.title)} · ${esc(s.endedLabel||s.startedLabel)}`,btn('Về lớp học phần','open-student-course','secondary','data-id="'+s.courseId+'"'))}<div class="grid grid-3"><div class="card metric"><div class="value">${p?.joinedAt||'—'}</div><div class="label">Thời điểm tham gia</div></div><div class="card metric"><div class="value">${events.length}</div><div class="label">Tín hiệu trong phiên</div></div><div class="card metric"><div class="value">${badge(p?.status==='attention'?'Có tín hiệu cần xem lại':p?.status==='technical'?'Có lỗi thiết bị':'Đã tham gia',p?.status==='attention'?'b-amber':p?.status==='technical'?'b-red':'b-green')}</div><div class="label">Tình trạng tham gia</div></div></div><div class="card pad" style="margin-top:15px"><h2 class="section-title">Thông tin đã ghi nhận</h2>${events.length?`<div class="signal-timeline">${events.map(e=>`<article><h4>${esc(e.time)} · ${esc(e.type)}</h4><p>${esc(e.description)}</p></article>`).join('')}</div>`:`<div class="empty"><h3>Không có tín hiệu cần xem lại</h3><p>Không có sự kiện được ghi nhận cho bạn trong phiên này.</p></div>`}<div class="notice info" style="margin-top:14px">Bản tổng kết chỉ phản ánh dữ liệu của phiên. Một tín hiệu đơn lẻ không phải kết luận về mức độ tập trung hoặc vi phạm.</div><div class="toolbar" style="margin-top:14px">${btn('Xem lịch sử của tôi','student-history','secondary')}${btn('Về trang chủ','student-home','primary')}</div></div>`,'student-home');
+}
+function studentHistory(){const rows=db.sessions.filter(s=>db.studentCourseIds.includes(s.courseId)&&s.participants.some(p=>p.id===state.user.studentId)).sort((a,b)=>b.startedAt.localeCompare(a.startedAt));return shell(`${head('LỊCH SỬ CỦA TÔI','Các phiên đã tham gia','Lịch sử chỉ hiển thị các lớp học phần và phiên có liên quan đến tài khoản này.') }<div class="card pad"><div class="toolbar"><select class="select" id="student-history-course"><option value="">Tất cả học phần</option>${db.courses.filter(c=>db.studentCourseIds.includes(c.id)).map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select><select class="select" id="student-history-type"><option value="">Tất cả loại phiên</option><option value="study">Học tập</option><option value="exam">Thi</option></select></div><div id="student-history-list" style="margin-top:14px">${studentHistoryRows(rows)}</div></div>`,'student-history')}
+function studentHistoryRows(rows){return rows.length?`<div class="table-wrap"><table class="table"><thead><tr><th>Phiên</th><th>Học phần</th><th>Loại</th><th>Thời gian</th><th>Tham gia</th><th>Trạng thái</th></tr></thead><tbody>${rows.map(s=>{const c=course(s.courseId);const p=s.participants.find(x=>x.id===state.user.studentId);return `<tr><td><strong>${esc(s.title)}</strong><div class="student-id">${esc(s.id)}</div></td><td>${esc(c.name)}</td><td>${s.type==='exam'?'Thi':'Học tập'}</td><td>${esc(s.startedLabel)}</td><td>${esc(p?.joinedAt||'—')}</td><td>${badge(s.status==='Đang diễn ra'?'Đang diễn ra':'Đã kết thúc',s.status==='Đang diễn ra'?'b-green':'b-grey')}</td></tr>`}).join('')}</tbody></table></div>`:`<div class="empty"><h3>Chưa có phiên phù hợp</h3><p>Tham gia một phiên học phần để lưu lịch sử tại đây.</p></div>`}
+function teacherReports(){const rows=db.sessions.slice().sort((a,b)=>b.startedAt.localeCompare(a.startedAt));return shell(`${head('BÁO CÁO','Báo cáo các lớp học phần','Xem tổng hợp phiên học, phiên thi và tình hình tham gia theo từng lớp.',btn('Tải CSV','export-csv','secondary'))}<div class="card pad">${recentSessionsTable(rows)}</div>`,'teacher-reports')}
+function render(){closeModal();if(!state.user){app.innerHTML=state.route==='register'?registerPage():state.route==='forgot'?forgotPage():loginPage();return}switch(state.route){case'teacher-home':app.innerHTML=teacherHome();break;case'teacher-course':app.innerHTML=classOverview(selectedCourse());break;case'teacher-session':app.innerHTML=teacherSession(selectedSession());break;case'teacher-student':app.innerHTML=teacherStudentDetail();break;case'teacher-reports':app.innerHTML=teacherReports();break;case'student-home':app.innerHTML=studentHome();break;case'student-course':app.innerHTML=studentCourseOverview(selectedCourse());break;case'student-prepare':app.innerHTML=studentPrepare();break;case'student-live':app.innerHTML=studentLive();attachLiveVideo();break;case'student-history':app.innerHTML=studentHistory();break;default:state.route=role()==='teacher'?'teacher-home':'student-home';render();}}
+function attachLiveVideo(){const v=$('#live-video');if(v&&state.cameraStream){v.srcObject=state.cameraStream;v.classList.remove('hidden')}}
+function openCourse(id){state.selectedCourseId=id;state.rosterFilter='all';state.rosterQuery='';state.classCameraExpanded=false;routeTo('teacher-course')}
+function openStudentCourse(id){state.selectedCourseId=id;routeTo('student-course')}
+function createSession(form){const c=selectedCourse();if(activeSession(c.id)){toast('Lớp này đang có một phiên hoạt động.');return}const type=$('input[name="session-type"]:checked',form)?.value||'study';const title=$('#session-title',form).value.trim();if(!title){toast('Nhập tên phiên trước khi mở.');return}const now=new Date();const participants=c.roster.map(p=>({...p,status:'absent',joinedAt:'',lastSignal:'Chưa tham gia phiên',events:[]}));const s={id:`${c.code}-${Date.now().toString().slice(-5)}`,courseId:c.id,title,type:type==='exam'?'exam':'study',duration:Number($('#session-duration',form).value||60),note:$('#session-note',form).value.trim(),status:'Đang diễn ra',startedAt:now.toISOString(),startedLabel:now.toLocaleString('vi-VN',{dateStyle:'short',timeStyle:'short'}),participants,attendanceSeeded:false,events:[]};db.sessions.push(s);state.selectedSessionId=s.id;save();closeModal();toast(`Đã mở ${type==='exam'?'phiên thi':'phiên học'} cho ${c.name}. Sinh viên trong lớp đã nhận thông báo.`);render()}
+function seedAttendance(){const s=activeSession(state.selectedCourseId);if(!s||s.attendanceSeeded){toast('Không có dữ liệu mẫu để thêm.');return}const roster=s.participants;const now=new Date();roster.forEach((p,i)=>{if(i<Math.round(roster.length*.66)){p.status=i<Math.round(roster.length*.52)?'stable':'attention';p.joinedAt=new Date(now.getTime()-Math.floor(Math.random()*25)*60000).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});p.lastSignal=p.status==='stable'?'Chưa ghi nhận tín hiệu cần lưu ý':'Có tín hiệu cần xem lại';if(p.status==='attention')p.events.push({time:p.joinedAt,type:i%2?'Nhắm mắt kéo dài':'Nhìn lệch khỏi màn hình',description:'Tín hiệu minh họa cần được xem trong ngữ cảnh buổi học.',snapshotAvailable:true})}else if(i<Math.round(roster.length*.72)){p.status='technical';p.lastSignal='Camera bị gián đoạn';p.events.push({time:now.toLocaleTimeString('vi-VN'),type:'Mất tín hiệu camera',description:'Tín hiệu kỹ thuật minh họa.'})}});s.attendanceSeeded=true;s.events.push({time:now.toLocaleTimeString('vi-VN'),type:'Cập nhật dữ liệu minh họa',description:'Dữ liệu điểm danh mẫu được tạo để trình diễn dashboard.'});save();render();toast('Đã tạo trạng thái điểm danh minh họa cho lớp.')}
+function joinSession(sessionId){const s=db.sessions.find(x=>x.id===sessionId&&x.status==='Đang diễn ra');if(!s){toast('Phiên này đã kết thúc hoặc không còn tồn tại.');return}const p=s.participants.find(x=>x.id===state.user.studentId);if(!p){toast('Tài khoản demo chưa có tên trong danh sách sinh viên lớp này.');return}state.selectedSessionId=s.id;state.selectedCourseId=s.courseId;state.cameraReady=false;state.privacyAccepted=false;state.paused=false;routeTo('student-prepare')}
+function startStudentSession(){const s=selectedSession();if(!state.cameraReady||!state.privacyAccepted){toast('Hãy kiểm tra camera và xác nhận thông tin trước khi vào phiên.');return}const p=s.participants.find(x=>x.id===state.user.studentId);if(p){p.status='stable';p.joinedAt=new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});p.lastSignal='Đã vào phiên';}s.events.push({time:new Date().toLocaleTimeString('vi-VN'),type:'Sinh viên tham gia',description:`${state.user.name} đã vào phiên.`});save();state.elapsed=0;state.paused=false;routeTo('student-live');startTimer();toast('Đã ghi nhận bạn tham gia phiên.')}
+function startTimer(){clearInterval(state.timer);state.timer=setInterval(()=>{if(!state.paused){state.elapsed++;const el=$('#session-clock');if(el)el.textContent=formatTime(state.elapsed)}},1000)}
+function formatTime(sec){const m=Math.floor(sec/60),s=sec%60;return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`}
+function finishSession(sessionId){const s=db.sessions.find(x=>x.id===sessionId);if(!s)return;s.status='Đã kết thúc';s.endedAt=new Date().toISOString();s.endedLabel=new Date().toLocaleString('vi-VN',{dateStyle:'short',timeStyle:'short'});s.events.push({time:new Date().toLocaleTimeString('vi-VN'),type:'Kết thúc phiên',description:'Giảng viên đã kết thúc phiên.'});save();closeModal();toast('Đã kết thúc phiên. Sinh viên không thể tham gia phiên này nữa.');state.selectedSessionId=s.id;render()}
+function confirmEndSession(id){const s=db.sessions.find(x=>x.id===id);modal('Kết thúc phiên này?',`Phiên “${esc(s?.title)}” sẽ chuyển sang trạng thái Đã kết thúc. Sinh viên sẽ không thể tham gia mới; dữ liệu điểm danh và sự kiện đã ghi vẫn được giữ.`,`<div class="modal-actions"><button class="btn secondary" data-action="close-modal">Tiếp tục phiên</button><button class="btn danger" data-action="end-session-confirm" data-id="${id}">Kết thúc phiên</button></div>`)}
+async function requestCamera(){const msg=$('#camera-message'),overlay=$('#camera-overlay');if(msg)msg.textContent='Đang yêu cầu quyền camera…';try{if(!navigator.mediaDevices?.getUserMedia)throw new Error('Trình duyệt không hỗ trợ camera trong ngữ cảnh hiện tại.');const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});stopCamera();state.cameraStream=stream;state.cameraReady=true;const v=$('#camera-video');if(v){v.srcObject=stream;v.classList.remove('hidden')}$('#camera-placeholder')?.classList.add('hidden');if(msg)msg.textContent='Camera đã kết nối.';if(overlay)overlay.textContent='Camera đã kết nối';$('#camera-state-label')&&( $('#camera-state-label').textContent='Đã kết nối');$('#permission-state-label')&&( $('#permission-state-label').textContent='Đã cấp quyền');$('#ready-state-label')&&( $('#ready-state-label').textContent='Sẵn sàng');updateJoinButton()}catch(e){state.cameraReady=false;state.cameraError=e.message;if(msg)msg.textContent=e.name==='NotAllowedError'?'Bạn đã từ chối quyền camera. Hãy cấp quyền trong trình duyệt rồi thử lại.':e.message;if(overlay)overlay.textContent='Chưa kết nối';$('#camera-state-label')&&( $('#camera-state-label').textContent='Chưa kết nối');$('#permission-state-label')&&( $('#permission-state-label').textContent='Chưa được cấp');$('#ready-state-label')&&( $('#ready-state-label').textContent='Chưa sẵn sàng');updateJoinButton()}}
+function simulateCameraReady(){stopCamera();state.cameraReady=true;$('#camera-placeholder')?.classList.remove('hidden');$('#camera-placeholder')&&($('#camera-placeholder').innerHTML='<div class="icon">✓</div><strong>Thiết bị đã sẵn sàng (mô phỏng)</strong><p class="tiny">Đang dùng camera mô phỏng cho buổi demo.</p>');$('#camera-message')&&( $('#camera-message').textContent='Đang sử dụng trạng thái camera mô phỏng.');$('#camera-overlay')&&( $('#camera-overlay').textContent='Sẵn sàng · mô phỏng');$('#camera-state-label')&&( $('#camera-state-label').textContent='Sẵn sàng (mô phỏng)');$('#permission-state-label')&&( $('#permission-state-label').textContent='Đã xác nhận mô phỏng');$('#ready-state-label')&&( $('#ready-state-label').textContent='Sẵn sàng');updateJoinButton()}
+function updateJoinButton(){const b=$('#join-session-button');if(b)b.disabled=!(state.cameraReady&&$('#privacy-check')?.checked)}
+function studentLeave(){clearInterval(state.timer);state.timer=null;stopCamera();const s=selectedSession();if(s){const p=s.participants.find(x=>x.id===state.user.studentId);if(p)p.lastSignal='Đã rời màn hình phiên';save()}routeTo('student-home');toast('Bạn đã rời màn hình phiên. Phiên của lớp vẫn tiếp tục nếu giảng viên chưa kết thúc.')}
+function addStudentEvent(){const s=selectedSession();const p=s?.participants.find(x=>x.id===state.user.studentId);if(!s||!p)return;const now=new Date().toLocaleTimeString('vi-VN');p.status='attention';p.lastSignal='Có tín hiệu cần xem lại';p.events.push({time:now,type:'Nhắm mắt kéo dài',description:'Sự kiện minh họa do người thử nghiệm chủ động tạo.',snapshotAvailable:true});s.events.push({time:now,type:'Tín hiệu cần xem xét',description:`Tín hiệu minh họa của ${state.user.name}.`});save();render();toast('Đã thêm một tín hiệu minh họa để kiểm tra dashboard giảng viên.')}
+function openTeacherStudent(studentId,sessionId){state.selectedStudentId=studentId;state.selectedSessionId=sessionId;state.teacherFeedPaused=false;routeTo('teacher-student')}
+function filterRoster(){const s=selectedSession();if(!s)return;$('#roster-table').innerHTML=rosterRows(s,selectedCourse())}
+function updateStudentHistory(){const courseId=$('#student-history-course')?.value||'',type=$('#student-history-type')?.value||'';const rows=db.sessions.filter(s=>db.studentCourseIds.includes(s.courseId)&&(!courseId||s.courseId===courseId)&&(!type||s.type===type)&&s.participants.some(p=>p.id===state.user.studentId)).sort((a,b)=>b.startedAt.localeCompare(a.startedAt));$('#student-history-list').innerHTML=studentHistoryRows(rows)}
+function reportsCsv(){const rows=db.sessions.map(s=>{const c=course(s.courseId),st=statsForSession(s);return [s.id,s.title,c?.name,s.type==='exam'?'Thi':'Học tập',s.startedLabel,s.status,st.total,st.joined,st.stable,st.attention,st.technical,st.absent]});const all=[['Mã phiên','Tên phiên','Lớp','Loại','Bắt đầu','Trạng thái','Sĩ số','Đã tham gia','Ổn định','Cần xem xét','Lỗi thiết bị','Chưa tham gia'],...rows];const csv='\ufeff'+all.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));const a=document.createElement('a');a.href=url;a.download='edufocus-bao-cao-phien.csv';a.click();URL.revokeObjectURL(url)}
+function renderReports(){return teacherReports()}
+document.addEventListener('click',e=>{
+ const route=e.target.closest('[data-route]');if(route){routeTo(route.dataset.route);return}
+ const navAction=e.target.closest('[data-action]');if(!navAction)return;const a=navAction.dataset.action,id=navAction.dataset.id;
+ if(a==='logout'){logout();return}if(a==='reset-demo'){db=defaultData();try{localStorage.removeItem(KEY)}catch(e){}state.user=null;state.route='login';state.selectedSessionId=null;state.cameraReady=false;render();toast('Đã đặt lại dữ liệu demo.');return}if(a==='close-modal'){closeModal();return}if(a==='overlay-close'){closeModal();return}
+ if(a==='open-course'){openCourse(id);return}if(a==='open-course-session'){openCourse(id);openSessionModal();return}if(a==='open-student-course'){openStudentCourse(id);return}if(a==='join-course-session'){joinSession(id);return}if(a==='open-session-modal'){openSessionModal();return}
+ if(a==='view-session'){const s=db.sessions.find(x=>x.id===id);if(s){state.selectedCourseId=s.courseId;state.selectedSessionId=id;routeTo('teacher-session')}return}
+ if(a==='confirm-end-session'){confirmEndSession(id);return}if(a==='end-session-confirm'){finishSession(id);return}if(a==='open-class-report'){state.selectedSessionId=id;routeTo('teacher-session');return}
+ if(a==='seed-attendance'){seedAttendance();return}if(a==='view-student'){openTeacherStudent(navAction.dataset.student,navAction.dataset.session);return}if(a==='view-snapshot'){openSnapshotModal(navAction.dataset.student,navAction.dataset.session,navAction.dataset.eventIndex);return}if(a==='toggle-camera-wall'){state.classCameraExpanded=!state.classCameraExpanded;render();return}if(a==='toggle-student-feed'){state.teacherFeedPaused=!state.teacherFeedPaused;render();return}
+ if(a==='reset-roster-filter'){state.rosterFilter='all';state.rosterQuery='';render();return}
+ if(a==='request-camera'){requestCamera();return}if(a==='simulate-camera-ready'){simulateCameraReady();return}if(a==='start-student-session'){startStudentSession();return}
+ if(a==='pause-student'){state.paused=true;clearInterval(state.timer);render();toast('Đã tạm dừng bộ đếm trong bản demo.');return}if(a==='resume-student'){state.paused=false;startTimer();render();return}if(a==='leave-student-session'){studentLeave();return}
+ if(a==='alert-a'){state.alertVariant='A';render();return}if(a==='alert-b'){state.alertVariant='B';render();return}if(a==='add-student-event'){addStudentEvent();return}if(a==='export-csv'){reportsCsv();return}
+});
+document.addEventListener('submit',e=>{e.preventDefault();if(e.target.id==='login-form'){const email=$('#login-email').value.trim().toLowerCase(),pass=$('#login-password').value,err=$('#login-error');if(pass!==DEMO_PASSWORD||!['teacher@demo.test','student@demo.test'].includes(email)){err.classList.remove('hidden');return}if(email.startsWith('teacher')){state.user={name:'Nguyễn Minh Khôi',role:'teacher',email};state.route='teacher-home'}else{state.user={name:'Nguyễn Minh An',studentId:'2420001',role:'student',email};state.route='student-home'}db.user=state.user;save();render();return}
+ if(e.target.id==='create-session-form'){createSession(e.target);return}if(e.target.id==='register-form'){const pass=$('#reg-pass').value,confirm=$('#reg-confirm').value;if(pass!==confirm){$('#reg-error').textContent='Mật khẩu xác nhận không khớp.';$('#reg-error').classList.remove('hidden');return}if(pass.length<8){$('#reg-error').textContent='Mật khẩu cần ít nhất 8 ký tự.';$('#reg-error').classList.remove('hidden');return}toast('Đăng ký đã được mô phỏng. Bản demo sẽ dùng tài khoản sinh viên tạo sẵn để đăng nhập.');routeTo('login');return}if(e.target.id==='forgot-form'){$('#forgot-result').classList.remove('hidden');return}});
+document.addEventListener('change',e=>{if(e.target.id==='privacy-check'){state.privacyAccepted=e.target.checked;updateJoinButton()}if(e.target.name==='session-type'){$$('.session-choice').forEach(x=>x.classList.toggle('selected',!!$('input:checked',x)))}if(e.target.id==='student-history-course'||e.target.id==='student-history-type')updateStudentHistory()});
+document.addEventListener('input',e=>{if(e.target.id==='roster-search'){state.rosterQuery=e.target.value;filterRoster()}});
+document.addEventListener('click',e=>{const f=e.target.closest('[data-roster-filter]');if(f){state.rosterFilter=f.dataset.rosterFilter;$$('[data-roster-filter]').forEach(x=>x.classList.toggle('active',x===f));filterRoster()}});
+document.addEventListener('visibilitychange',()=>{
+ const s=state.route==='student-live'?selectedSession():null;
+ if(!s||s.type!=='exam'||s.status!=='Đang diễn ra'||state.paused)return;
+ if(document.hidden){const p=s.participants.find(x=>x.id===state.user?.studentId);if(p){const now=new Date().toLocaleTimeString('vi-VN');const ev={time:now,type:'Chuyển khỏi tab',description:'Trình duyệt ghi nhận trang phiên thi chuyển sang trạng thái không hiển thị. Sự kiện này không tự chứng minh gian lận.'};p.status='attention';p.lastSignal='Trang chuyển sang trạng thái không hiển thị';p.events.push(ev);s.events.push(ev);save()}}
+ else {toast('Hệ thống ghi nhận trang vừa chuyển khỏi trạng thái hiển thị. Đây là sự kiện trình duyệt, không phải kết luận vi phạm.')}
+});
+window.addEventListener('storage',e=>{if(e.key===KEY){db=load();if(state.user)render()}});
+window.addEventListener('beforeunload',()=>stopCamera());
+render();
+})();
+</script>
+</body>
+</html>
