@@ -1,0 +1,87 @@
+{
+  "contract_version": "1.1.0",
+  "register_request": {
+    "full_name": "Nguyễn Văn Sinh Viên",
+    "email": "student.a@university.edu.vn",
+    "password": "SecurePassword123!"
+  },
+  "register_response": {
+    "data": {
+      "user_id": "0d02e9d4-931b-44b3-83c3-9f7d83a8a201",
+      "full_name": "Nguyễn Văn Sinh Viên",
+      "email": "student.a@university.edu.vn",
+      "role": "LEARNER",
+      "created_at": "2026-11-05T08:00:00Z"
+    }
+  },
+  "login_request": {
+    "email": "student.a@university.edu.vn",
+    "password": "SecurePassword123!"
+  },
+  "login_response": {
+    "data": {
+      "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mockTokenStudent01",
+      "token_type": "bearer",
+      "expires_in": 900,
+      "user": {
+        "user_id": "0d02e9d4-931b-44b3-83c3-9f7d83a8a201",
+        "full_name": "Nguyễn Văn Sinh Viên",
+        "email": "student.a@university.edu.vn",
+        "role": "LEARNER",
+        "created_at": "2026-11-05T08:00:00Z"
+      }
+    },
+    "set_cookie_description": "refresh_token=mockOpaqueRefreshToken12345; HttpOnly; Secure; SameSite=Lax; Path=/api/v1/auth"
+  },
+  "instructor_login_response": {
+    "data": {
+      "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mockTokenInstructor01",
+      "token_type": "bearer",
+      "expires_in": 900,
+      "user": {
+        "user_id": "c94b8b7c-efab-4c85-b42b-9603c0a8d202",
+        "full_name": "TS. Trần Giảng Viên",
+        "email": "instructor.demo@university.edu.vn",
+        "role": "INSTRUCTOR",
+        "created_at": "2026-11-04T14:00:00Z"
+      }
+    }
+  },
+  "me_response": {
+    "data": {
+      "user_id": "0d02e9d4-931b-44b3-83c3-9f7d83a8a201",
+      "full_name": "Nguyễn Văn Sinh Viên",
+      "email": "student.a@university.edu.vn",
+      "role": "LEARNER",
+      "created_at": "2026-11-05T08:00:00Z"
+    }
+  },
+  "register_attempt_role_escalation": {
+    "request": {
+      "full_name": "Kẻ Tấn Công",
+      "email": "hacker@example.edu",
+      "password": "SecurePassword123!",
+      "role": "INSTRUCTOR"
+    },
+    "expected_status": 422,
+    "expected_result": "Yêu cầu bị từ chối; không tài khoản nào được tạo."
+  },
+  "login_invalid_credentials_response": {
+    "error": {
+      "code": "INVALID_CREDENTIALS",
+      "message": "Thông tin đăng nhập chưa đúng."
+    }
+  },
+  "forbidden_role_response": {
+    "error": {
+      "code": "FORBIDDEN",
+      "message": "Bạn không có quyền thực hiện thao tác này."
+    }
+  },
+  "not_found_out_of_scope_response": {
+    "error": {
+      "code": "NOT_FOUND",
+      "message": "Không tìm thấy tài nguyên trong phạm vi truy cập của bạn."
+    }
+  }
+}
