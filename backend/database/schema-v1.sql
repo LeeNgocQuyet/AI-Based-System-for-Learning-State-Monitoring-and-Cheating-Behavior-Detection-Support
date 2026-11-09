@@ -52,7 +52,7 @@ CREATE TABLE sessions (
     started_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     paused_at               TIMESTAMPTZ NULL,
     ended_at                TIMESTAMPTZ NULL,
-    active_started_at       TIMESTAMPTZ NULL DEFAULT NOW(),
+    active_started_at       TIMESTAMPTZ NULL,
     accumulated_active_ms   BIGINT NOT NULL DEFAULT 0,
     created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -70,6 +70,20 @@ CREATE TABLE sessions (
 CREATE INDEX ix_sessions_learner_started ON sessions (learner_id, started_at DESC);
 CREATE INDEX ix_sessions_status_started ON sessions (status, started_at DESC);
 CREATE INDEX ix_sessions_type_status ON sessions (session_type, status);
+
+-- Automatically set active_started_at when inserting an ACTIVE session without explicit active_started_at.
+-- Leave active_started_at NULL for PAUSED and ENDED sessions.
+CREATE FUNCTION init_session_active_timestamp() RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.status = 'ACTIVE' AND NEW.active_started_at IS NULL THEN
+        NEW.active_started_at := COALESCE(NEW.started_at, NOW());
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER trg_session_init_active_timestamp
+BEFORE INSERT ON sessions
+FOR EACH ROW EXECUTE FUNCTION init_session_active_timestamp();
 
 -- Ensure that only an active LEARNER account can own a session.
 CREATE FUNCTION enforce_learner_session_owner() RETURNS TRIGGER AS $$

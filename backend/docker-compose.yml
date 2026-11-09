@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: learning_monitor
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema-v1.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d learning_monitor"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@db:5432/learning_monitor
+      JWT_SECRET: ${JWT_SECRET:-group3-secure-dev-jwt-secret-key-32chars-min-local-demo}
+      DEMO_LEARNER1_PASSWORD: ${DEMO_LEARNER1_PASSWORD:-DemoLearnerPassword123!}
+      DEMO_LEARNER2_PASSWORD: ${DEMO_LEARNER2_PASSWORD:-DemoLearnerPassword123!}
+      DEMO_INSTRUCTOR_PASSWORD: ${DEMO_INSTRUCTOR_PASSWORD:-DemoInstructorPassword123!}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["sh", "-c", "python scripts/seed_demo.py && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+
+volumes:
+  postgres_data:

@@ -1,0 +1,87 @@
+{
+  "contract_version": "1.2.0",
+  "description": "Static fixtures for Frontend development without a running Backend. IDs are deterministic sample values and must not be treated as production IDs.",
+  "session_create_request": {"session_type": "LEARNING"},
+  "session_create_response": {
+    "data": {
+      "session_id": "8d33d0e6-5b1a-4bc6-a4be-6d56e5f9d101",
+      "session_type": "LEARNING",
+      "status": "ACTIVE",
+      "started_at": "2026-11-06T03:00:00.000Z",
+      "ended_at": null,
+      "duration_ms": 0
+    }
+  },
+  "session_pause_response": {
+    "data": {
+      "session_id": "8d33d0e6-5b1a-4bc6-a4be-6d56e5f9d101",
+      "session_type": "LEARNING",
+      "status": "PAUSED",
+      "started_at": "2026-11-06T03:00:00.000Z",
+      "ended_at": null,
+      "duration_ms": 900000
+    }
+  },
+  "session_end_response": {
+    "data": {
+      "session_id": "8d33d0e6-5b1a-4bc6-a4be-6d56e5f9d101",
+      "session_type": "LEARNING",
+      "status": "ENDED",
+      "started_at": "2026-11-06T03:00:00.000Z",
+      "ended_at": "2026-11-06T03:25:00.000Z",
+      "duration_ms": 1500000
+    }
+  },
+  "session_list_response": {
+    "data": [], "page": 1, "page_size": 20, "total": 0
+  },
+  "event_list_response": {
+    "data": [
+      {
+        "event_id": "9c2d08a4-6f33-4b9c-88c5-4139e474c201",
+        "schema_version": "1.0.0",
+        "session_id": "8d33d0e6-5b1a-4bc6-a4be-6d56e5f9d101",
+        "event_type": "EYES_CLOSED_LONG",
+        "occurred_at": "2026-11-06T03:05:12.345Z",
+        "received_at": "2026-11-06T03:05:12.512Z",
+        "source": "AI_LEARNING",
+        "severity": "MEDIUM",
+        "duration_ms": 4200,
+        "confidence": 0.94,
+        "message": "Hệ thống ghi nhận dấu hiệu nhắm mắt kéo dài.",
+        "metadata": {"eye_closure_ms": 4200}
+      },
+      {
+        "event_id": "4bdca90b-aef0-47f3-9a7c-375f34057c02",
+        "schema_version": "1.0.0",
+        "session_id": "8d33d0e6-5b1a-4bc6-a4be-6d56e5f9d101",
+        "event_type": "YAWN_DETECTED",
+        "occurred_at": "2026-11-06T03:07:08.000Z",
+        "received_at": "2026-11-06T03:07:08.120Z",
+        "source": "AI_LEARNING",
+        "severity": "LOW",
+        "duration_ms": null,
+        "confidence": 0.89,
+        "message": "Hệ thống ghi nhận dấu hiệu ngáp.",
+        "metadata": {"yawn_probability": 0.89}
+      },
+      {
+        "event_id": "5bd52fe5-cb1e-48aa-94a1-5d431b1b7001",
+        "schema_version": "1.0.0",
+        "session_id": "8d33d0e6-5b1a-4bc6-a4be-6d56e5f9d101",
+        "event_type": "TAB_HIDDEN",
+        "occurred_at": "2026-11-06T03:11:20.000Z",
+        "received_at": "2026-11-06T03:11:20.100Z",
+        "source": "BROWSER",
+        "severity": "MEDIUM",
+        "duration_ms": null,
+        "confidence": null,
+        "message": "Trình duyệt ghi nhận tab học/thi không còn hiển thị.",
+        "metadata": {"visibility_state": "hidden"}
+      }
+    ],
+    "page": 1,
+    "page_size": 20,
+    "total": 3
+  }
+}

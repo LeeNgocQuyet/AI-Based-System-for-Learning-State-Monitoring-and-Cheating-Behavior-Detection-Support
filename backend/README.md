@@ -1,146 +1,187 @@
-# Backend Architecture & Contract v1.1 — Nhóm 3
+# Backend Architecture, Session/Event API & Seed Data v1.2 — Nhóm 3
 
 **Đề tài:** Thiết kế và phát triển hệ thống giám sát trạng thái học tập và hỗ trợ phát hiện hành vi gian lận dựa trên trí tuệ nhân tạo.
 
-**Trạng thái:** Final v1.1.0 — Đã hợp nhất toàn diện Auth, RBAC, Database Schema PostgreSQL và Event/Session Contract.
+**Phiên bản:** Release v1.2.0 — Triển khai hoàn chỉnh FastAPI Service, Session Lifecycle API, Event Ingestion/Query API, Postman Test Suite, và Dữ liệu Mock Seeding phục vụ Frontend phát triển độc lập.
 
 ---
 
-## 1. Cấu trúc thư mục Backend
+## 1. Cấu trúc thư mục Backend v1.2
 
-Thư mục `backend/` được tổ chức theo chuẩn kiến trúc phần mềm phân tầng (Layered Architecture), đảm bảo tính module hóa và dễ bảo trì:
+Thư mục `backend/` được tổ chức theo chuẩn kiến trúc phân tầng (Clean Architecture / Layered Pattern):
 
 ```
 backend/
-├── README.md                      # Tài liệu tổng quan kiến trúc và hướng dẫn vận hành v1.1.0
-├── auth-rbac.md                   # Đặc tả chi tiết AuthN, AuthZ, ma trận phân quyền RBAC và test cases
-├── event-ingest-v1.schema.json    # JSON Schema chuẩn cho sự kiện Browser/AI gửi lên Backend
-├── event-record-v1.schema.json    # JSON Schema chuẩn cho sự kiện lưu trữ sau chuẩn hóa
-├── openapi-v1.1.yaml              # OpenAPI 3.1.0 contract đầy đủ (Auth, Sessions, Events, Teacher, Report)
-├── openapi-v1.yaml                # Alias đồng bộ cho OpenAPI contract
-├── requirements-auth-seed.txt     # Thư viện phụ thuộc cho Database seed (psycopg, argon2-cffi)
-├── database/
-│   ├── schema-v1.sql              # PostgreSQL DDL hoàn chỉnh (Users, Sessions, Events, Grants, Tokens)
-│   ├── seed_instructor.py         # Script khởi tạo tài khoản Giảng viên an toàn với Argon2id
-│   ├── grant-instructor-session.sql # Script phân quyền phiên thi cho Giảng viên trong kịch bản demo
-│   └── .env.example               # Mẫu cấu hình biến môi trường kết nối DB và JWT Secret
-└── mocks/
-    ├── auth-rbac-mock-payloads.json # Dữ liệu mock Auth, Login, Token, và các mã lỗi RBAC
-    ├── event-mock-payloads.json   # Dữ liệu mock cho 10 loại Event, Session lifecycle và Report
-    └── mock-payloads.json         # File mock hợp nhất tổng thể cho Frontend
+├── app/                           # Mã nguồn chính ứng dụng FastAPI
+│   ├── main.py                    # Entry point khởi tạo FastAPI app, middleware CORS, định tuyến
+│   ├── api/v1/                    # Tầng Controller / Endpoints (Sessions, Events, Teacher)
+│   │   ├── sessions.py            # API tạo phiên, pause, resume, end, xem chi tiết và báo cáo
+│   │   ├── events.py              # API ingest sự kiện (idempotent) và query sự kiện
+│   │   ├── teacher.py             # API danh sách phiên dành cho Giảng viên (grant scope)
+│   │   └── router.py              # Gom các router API v1
+│   ├── core/                      # Cấu hình bảo mật, JWT dependencies, Settings
+│   │   ├── config.py              # Pydantic Settings đọc biến môi trường
+│   │   ├── dependencies.py        # Dependency injection xác thực Token (Learner/Instructor/Service)
+│   │   └── security.py            # Logic mã hóa mật khẩu và decode/encode JWT token
+│   ├── db/                        # Kết nối cơ sở dữ liệu SQLAlchemy 2.0
+│   │   ├── base.py                # DeclarativeBase chung cho models
+│   │   └── session.py             # SessionLocal và dependency get_db
+│   ├── models/                    # ORM Models ánh xạ bảng CSDL PostgreSQL
+│   │   ├── enums.py               # Enums chuẩn (UserRole, SessionType, SessionStatus, EventType, Severity, Source)
+│   │   ├── user.py                # Model User
+│   │   ├── session.py             # Model LearningSession (tính duration, ràng buộc state)
+│   │   ├── event.py               # Model Event (idempotency, severity, message, is_reviewed)
+│   │   └── instructor_access.py   # Model InstructorSessionAccess (allow-list grants)
+│   ├── schemas/                   # Pydantic Schemas xác thực DTO Request/Response
+│   │   ├── session.py             # Schema SessionCreate, SessionOut, SessionReport
+│   │   └── event.py               # Schema EventIngest (validate UTC, source mapping), EventOut
+│   └── services/                  # Business Logic Layer
+│       ├── session_service.py     # Quản lý vòng đời phiên, tính thời lượng active, RBAC scope
+│       └── event_service.py       # Ingest sự kiện, chuẩn hóa severity demo, deduplication
+├── database/                      # DDL khởi tạo cơ sở dữ liệu PostgreSQL
+│   ├── schema-v1.sql              # Schema DDL chuẩn: users, sessions, events, grants, refresh_tokens
+│   ├── seed_instructor.py         # Script khởi tạo tài khoản Giảng viên với Argon2id
+│   └── grant-instructor-session.sql # Script phân quyền phiên mẫu cho Giảng viên
+├── scripts/                       # Các script công cụ vận hành và kiểm thử
+│   ├── seed_demo.py               # Seed CSDL: 2 learner, 1 instructor, 2 sessions và mock events
+│   ├── issue_user_token.py        # Sinh Access JWT cho Learner/Instructor phục vụ Swagger/Postman
+│   ├── issue_service_token.py     # Sinh Service Token cho AI_LEARNING / AI_EXAM / SYSTEM
+│   └── grant_instructor_session.py # Cấp quyền đọc phiên cho Giảng viên
+├── postman/                       # Bộ kiểm thử Postman hoàn chỉnh
+│   ├── collection-session-event-v1.2.json # Postman Collection kiểm thử trọn vẹn Session & Event
+│   └── environment.template.json  # Postman Environment Template mẫu
+├── seed/                          # Dữ liệu Mock tĩnh cho Frontend
+│   └── frontend-mock-sessions.json # Response fixtures tĩnh giúp Frontend phát triển độc lập
+├── tests/                         # Bộ kiểm thử tự động pytest (19/19 test cases)
+│   ├── conftest.py                # Fixtures SQLite in-memory, mock JWT credentials
+│   ├── test_sessions.py           # Unit tests kiểm thử vòng đời phiên và RBAC
+│   └── test_events.py             # Unit tests kiểm thử event ingest, idempotency, source spoofing
+├── docs/                          # Tài liệu kỹ thuật tham chiếu
+│   ├── openapi-session-event-v1.2.json # OpenAPI 3.1 JSON sinh trực tiếp từ FastAPI
+│   └── api-contract-delta-v1.2.md      # Chi tiết các delta cải tiến v1.2
+├── Dockerfile                     # Đóng gói container ứng dụng Backend
+├── docker-compose.yml             # Khởi chạy trọn gói PostgreSQL 15 + API + Auto Seed
+├── requirements.txt               # Thư viện runtime (FastAPI, SQLAlchemy, psycopg, PyJWT, pydantic)
+├── requirements-dev.txt           # Thư viện development & testing (pytest, httpx)
+├── pytest.ini                     # Cấu hình test runner
+└── .env.example                   # Mẫu cấu hình môi trường
 ```
 
 ---
 
-## 2. Kiến trúc Bảo mật & Phân quyền (Auth & RBAC)
+## 2. Các chức năng Session/Event API cốt lõi (v1.2)
 
-Hệ thống được thiết kế theo nguyên tắc **Zero Trust** đối với Client:
-1. **Hai vai trò cốt lõi (`user_role`):** `LEARNER` (Người học) và `INSTRUCTOR` (Giảng viên).
-2. **Đăng ký công khai (`POST /auth/register`):**
-   - Chỉ tạo tài khoản với vai trò `LEARNER`.
-   - Thuộc tính `additionalProperties: false` chặn mọi nỗ lực tự nâng quyền (`role: "INSTRUCTOR"` bị từ chối với lỗi `422`).
-3. **Cấp phát Giảng viên (Instructor Provisioning):**
-   - Giảng viên được cấp sẵn bằng script nội bộ `database/seed_instructor.py`. Không mở API public tạo Giảng viên.
-4. **Cơ chế Token kép (Dual-Token Pattern):**
-   - **Access Token:** JWT ngắn hạn (15 phút), lưu trong bộ nhớ client.
-   - **Refresh Token:** Chuỗi ngẫu nhiên opaque token lưu trong cookie bảo mật `HttpOnly; Secure; SameSite=Lax`. Cơ sở dữ liệu chỉ lưu chuỗi hash SHA-256 (`refresh_tokens.token_hash`).
-   - Mỗi lần refresh token (`POST /auth/refresh`), token cũ bị thu hồi ngay và xoay vòng (rotation) token mới.
-5. **Kiểm tra quyền sở hữu dữ liệu (Backend-enforced Scope):**
-   - **Người học:** Chỉ truy vấn các phiên có `sessions.learner_id = current_user_id`. Cố tình đọc session người khác sẽ nhận `404 Not Found` (không lộ sự tồn tại của session).
-   - **Giảng viên:** Chỉ truy vấn các phiên có bản ghi phân quyền trong bảng allow-list `instructor_session_access`.
-   - Tuyệt đối không dựa vào việc ẩn nút trên Frontend.
+### 2.1. Quản lý Vòng đời Phiên (Session Lifecycle)
+- **Tạo và bắt đầu phiên (`POST /api/v1/sessions`):**
+  - Người học tạo phiên `LEARNING` hoặc `EXAM`. Hệ thống khởi tạo trạng thái `ACTIVE` ngay lập tức.
+  - Tự động gán `started_at` và `active_started_at = NOW()`.
+- **Xem phiên cá nhân (`GET /api/v1/sessions/mine`):**
+  - Trả về danh sách phiên của chính sinh viên đang đăng nhập, hỗ trợ phân trang và lọc theo trạng thái/thời gian.
+- **Tạm dừng, Tiếp tục, Kết thúc:**
+  - `PATCH /api/v1/sessions/{session_id}/status` với body `{"status": "PAUSED" | "ACTIVE" | "ENDED"}`.
+  - `POST /api/v1/sessions/{session_id}/start`: Tiện ích resume phiên đang tạm dừng (`PAUSED -> ACTIVE`).
+  - `POST /api/v1/sessions/{session_id}/end`: Tiện ích kết thúc phiên (`ENDED`).
+  - **Quy tắc an toàn thi cử:** Chế độ `EXAM` tuyệt đối cấm chuyển sang trạng thái `PAUSED` (trả về lỗi `400 EXAM_PAUSE_NOT_ALLOWED`).
+- **Thời lượng giám sát thực tế (`duration_ms`):**
+  - Chỉ tính tổng thời gian ở trạng thái `ACTIVE`. Toàn bộ khoảng thời gian `PAUSED` bị loại trừ hoàn toàn.
 
----
-
-## 3. Quy chuẩn Vòng đời Phiên & Sự kiện (Session & Event Registry)
-
-### 3.1. Vòng đời phiên (Session Lifecycle)
-- **Chế độ học tập (`LEARNING`):** Cho phép `ACTIVE` $\leftrightarrow$ `PAUSED` $\rightarrow$ `ENDED`.
-- **Chế độ thi (`EXAM`):** **Nghiêm cấm `PAUSED`** (được ràng buộc ở cả database constraint `ck_sessions_exam_no_pause` lẫn tầng API validation trả về `400 EXAM_PAUSE_NOT_ALLOWED`).
-- **Thời lượng (`duration_ms`):** Tính toán chính xác từ các khoảng thời gian `ACTIVE`; toàn bộ thời gian `PAUSED` bị loại trừ.
-
-### 3.2. Danh mục 10 mã sự kiện chuẩn hóa
-| `event_type` | `source` hợp lệ | Module chịu trách nhiệm | Ý nghĩa hiển thị trung tính |
-|---|---|---|---|
-| `EYES_CLOSED_LONG` | `AI_LEARNING` | Quyết (AI Học tập) | Hệ thống ghi nhận dấu hiệu nhắm mắt kéo dài. |
-| `YAWN_DETECTED` | `AI_LEARNING` | Quyết (AI Học tập) | Hệ thống ghi nhận dấu hiệu ngáp. |
-| `HEAD_NOD_DETECTED` | `AI_LEARNING` | Quyết (AI Học tập) | Hệ thống ghi nhận chuyển động gật đầu lặp lại. |
-| `LOOK_AWAY_DETECTED` | `AI_LEARNING` / `AI_EXAM` | Quyết / Huy | Hệ thống ghi nhận hướng nhìn/đầu lệch khỏi vùng quan sát. |
-| `FACE_NOT_DETECTED` | `AI_LEARNING` / `AI_EXAM` | Quyết / Huy | Không phát hiện được khuôn mặt trong khung hình. |
-| `MULTIPLE_FACES_DETECTED` | `AI_EXAM` | Huy (AI Giám sát thi) | Phát hiện nhiều hơn một khuôn mặt trong khung hình. |
-| `PHONE_DETECTED` | `AI_EXAM` | Huy (AI Giám sát thi) | Mô hình phát hiện vật thể nghi vấn là điện thoại (thực nghiệm). |
-| `TAB_HIDDEN` | `BROWSER` | Nam (Frontend) | Trang kiểm tra chuyển sang trạng thái không hiển thị. |
-| `CAMERA_LOST` | `BROWSER` | Nam (Frontend) | Tín hiệu webcam bị gián đoạn. |
-| `CONNECTION_LOST` | `SYSTEM` | Phúc (Backend) | Kết nối truyền dữ liệu tới máy chủ bị gián đoạn. |
-
-- **Nguyên tắc đạo đức (HCI):** Backend gán mức `severity` (`INFO`, `LOW`, `MEDIUM`, `HIGH`) và thông điệp trung tính; không đưa ra kết luận "gian lận".
-- **Duyệt sự kiện (S11):** Giảng viên có thể cập nhật trạng thái `is_reviewed: true` qua `PATCH /sessions/{id}/events/{event_id}/review`.
+### 2.2. Ingest và Truy vấn Sự kiện (Event Ingestion & Query)
+- **Tiếp nhận sự kiện (`POST /api/v1/sessions/{session_id}/events`):**
+  - Hỗ trợ đúng 1 event/request theo chuẩn `EventIngest`.
+  - **Idempotency (Chống trùng lặp):** Gửi lại cùng `event_id` với payload giống hệt sẽ trả về `200 OK` kèm bản ghi cũ. Nếu cùng ID nhưng payload bị sửa đổi sẽ trả về `409 Conflict`.
+  - **Phân quyền nguồn phát (Source Integrity):**
+    - Token người học chỉ được gửi sự kiện `source: BROWSER` (`TAB_HIDDEN`, `CAMERA_LOST`) cho chính phiên của mình.
+    - Token AI Service chỉ được phát sự kiện khớp với quyền được cấp (`AI_LEARNING` vào phiên `LEARNING`, `AI_EXAM` vào phiên `EXAM`).
+  - **Chuẩn hóa tự động:** Backend tự động gán `received_at`, thông điệp trung tính và mức độ `severity` (`INFO`, `LOW`, `MEDIUM`, `HIGH`).
+- **Truy vấn sự kiện (`GET /api/v1/sessions/{session_id}/events`):**
+  - Cho phép người học (xem phiên của mình) và giảng viên (xem phiên có grant) tra cứu danh sách sự kiện kèm bộ lọc theo loại, mức độ, nguồn, thời gian.
+- **Báo cáo thống kê phiên (`GET /api/v1/sessions/{session_id}/report`):**
+  - Tổng hợp số lượng sự kiện theo từng loại (`counts_by_type`) và theo mức độ nghiêm trọng (`counts_by_severity`).
 
 ---
 
-## 4. Danh mục REST API
+## 3. Dữ liệu Mock phục vụ Frontend phát triển độc lập
 
-Base URL local: `http://localhost:8000/api/v1`
+Frontend có thể phát triển hoàn toàn độc lập thông qua 2 phương án:
 
-| Nhóm | Method | Endpoint | Quyền hạn | Mục đích |
-|---|---|---|---|---|
-| **Auth** | `POST` | `/auth/register` | Public | Đăng ký tài khoản Người học (S02) |
-| | `POST` | `/auth/login` | Public | Đăng nhập, cấp Access JWT + Refresh Cookie (S01) |
-| | `GET` | `/auth/me` | Bearer Auth | Lấy hồ sơ tài khoản và vai trò (`role`) hiện tại |
-| | `POST` | `/auth/refresh` | Refresh Cookie | Cấp lại access token và xoay vòng refresh cookie |
-| | `POST` | `/auth/logout` | Bearer + Cookie | Thu hồi refresh token và xóa cookie |
-| **Sessions** | `POST` | `/sessions` | Learner | Tạo phiên mới (`LEARNING` hoặc `EXAM`) |
-| | `GET` | `/sessions/mine` | Learner | Lấy danh sách phiên của chính mình (S04, S09) |
-| | `GET` | `/sessions/{id}` | Chủ phiên / Instructor | Xem chi tiết phiên |
-| | `PATCH` | `/sessions/{id}/status` | Chủ phiên | Tạm dừng/tiếp tục/kết thúc (Chặn PAUSE nếu thi) |
-| | `GET` | `/sessions/{id}/report` | Chủ phiên / Instructor | Lấy báo cáo thống kê tổng hợp phiên |
-| **Events** | `POST` | `/sessions/{id}/events` | Chủ phiên / AI Service | Đẩy sự kiện vào Backend (chống trùng lặp qua `event_id`) |
-| | `GET` | `/sessions/{id}/events` | Chủ phiên / Instructor | Lấy danh sách sự kiện theo bộ lọc |
-| **Teacher** | `GET` | `/teacher/sessions` | Instructor | Dashboard phiên có grant, hỗ trợ query `search` (S10) |
-| | `PATCH` | `/sessions/{id}/events/{event_id}/review` | Instructor | Đánh dấu sự kiện đã xem xét (S11) |
+1. **Phương án Mock Tĩnh (Offline Fixtures):**
+   - Sử dụng tệp [`backend/seed/frontend-mock-sessions.json`](file:///E:/Project_CV/BTL_TuongTacNguoiMay/AI-Based-System-for-Learning-State-Monitoring-and-Cheating-Behavior-Detection-Support/backend/seed/frontend-mock-sessions.json).
+   - Chứa sẵn cấu trúc JSON Response hoàn chỉnh của các API: tạo phiên (`session_create_response`), tạm dừng (`session_pause_response`), kết thúc (`session_end_response`), danh sách sự kiện (`event_list_response`) với đầy đủ 3 loại sự kiện mẫu (`EYES_CLOSED_LONG`, `YAWN_DETECTED`, `TAB_HIDDEN`).
+2. **Phương án Chạy Backend Mock Seeding (Live Demo API):**
+   - Chạy script `python scripts/seed_demo.py` để nạp sẵn:
+     - 2 tài khoản sinh viên: `learner.one@example.edu` và `learner.two@example.edu`.
+     - 1 tài khoản giảng viên: `instructor.demo@example.edu`.
+     - 2 phiên làm việc mẫu (1 phiên `LEARNING` đã kết thúc kèm 5 sự kiện; 1 phiên `EXAM` kèm 3 sự kiện và grant sẵn cho giảng viên).
 
 ---
 
-## 5. Quy chuẩn WebSocket cho Cảnh báo Thời gian thực
+## 4. Hướng dẫn Khởi chạy & Kiểm thử
 
-1. **Kênh Người học (`ws://localhost:8000/api/v1/ws/sessions/{session_id}?token={JWT}`):**
-   - Backend đẩy thông điệp nhắc nhở trung tính xuống giao diện học tập S06/S08 khi phát hiện dấu hiệu buồn ngủ hoặc mất tập trung.
-2. **Kênh Giảng viên (`ws://localhost:8000/api/v1/ws/teacher/live?token={JWT}`):**
-   - Backend đẩy các sự kiện `MEDIUM` hoặc `HIGH` trong phòng thi tới Dashboard S10/S11 theo thời gian thực.
-
----
-
-## 6. Hướng dẫn Khởi chạy Database & Seed dữ liệu Local
-
-### Bước 1: Khởi tạo CSDL PostgreSQL 15+
+### Cách 1: Khởi chạy nhanh bằng Docker Compose (Khuyên dùng)
 ```bash
-# Tạo database
-createdb -U postgres learning_monitor
-
-# Áp dụng schema DDL
-psql -U postgres -d learning_monitor -f database/schema-v1.sql
+cd backend
+cp .env.example .env
+docker compose up --build
 ```
+Hệ thống tự động:
+1. Tạo container PostgreSQL 15 và thực thi `database/schema-v1.sql`.
+2. Chạy `scripts/seed_demo.py` nạp sẵn dữ liệu demo.
+3. Khởi động FastAPI server tại `http://localhost:8000`.
 
-### Bước 2: Cài đặt thư viện Seed
+* **Swagger UI:** `http://localhost:8000/api/v1/docs`
+* **OpenAPI JSON:** `http://localhost:8000/api/v1/openapi.json`
+* **Health Check:** `http://localhost:8000/health`
+
+### Cách 2: Khởi chạy Local bằng Python Virtualenv
 ```bash
-pip install -r requirements-auth-seed.txt
+cd backend
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+# Cài đặt thư viện:
+pip install -r requirements-dev.txt
+
+# Tạo file .env và cấu hình DATABASE_URL
+cp .env.example .env
+
+# Chạy seed dữ liệu demo:
+python scripts/seed_demo.py
+
+# Khởi chạy API server:
+uvicorn app.main:app --reload --port 8000
 ```
 
-### Bước 3: Khởi tạo tài khoản Giảng viên (Seed Instructor)
+---
+
+## 5. Kiểm thử qua Postman & Swagger
+
+### Bước 1: Phát Token kiểm thử
+Khi chưa kết nối module Auth tập trung, sử dụng script phát Token nội bộ:
 ```bash
-export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/learning_monitor"
-export INSTRUCTOR_EMAIL="instructor.demo@university.edu.vn"
-export INSTRUCTOR_FULL_NAME="TS. Trần Giảng Viên"
-export INSTRUCTOR_PASSWORD="DemoSecurePassword123!"
-
-python database/seed_instructor.py
+# Token sinh viên:
+python scripts/issue_user_token.py --email learner.one@example.edu
+# Token giảng viên:
+python scripts/issue_user_token.py --email instructor.demo@example.edu
+# Token AI Service:
+python scripts/issue_service_token.py --service ai-learning
+python scripts/issue_service_token.py --service ai-exam
 ```
 
-### Bước 4: Cấp quyền xem phiên cho Giảng viên (Grant Session)
-Khi sinh viên tạo phiên demo có ID cụ thể, chạy script sau để cấp quyền cho Giảng viên:
+### Bước 2: Chạy Postman Collection
+1. Mở Postman $\rightarrow$ Import tệp [`backend/postman/collection-session-event-v1.2.json`](file:///E:/Project_CV/BTL_TuongTacNguoiMay/AI-Based-System-for-Learning-State-Monitoring-and-Cheating-Behavior-Detection-Support/backend/postman/collection-session-event-v1.2.json).
+2. Import Environment template [`backend/postman/environment.template.json`](file:///E:/Project_CV/BTL_TuongTacNguoiMay/AI-Based-System-for-Learning-State-Monitoring-and-Cheating-Behavior-Detection-Support/backend/postman/environment.template.json).
+3. Dán các token vừa sinh vào biến `learnerToken`, `instructorToken`, `aiLearningToken`, `aiExamToken`.
+4. Thực thi tuần tự các request:
+   - `Create Learning Session` (Tạo phiên học tập $\rightarrow$ lưu `sessionId`)
+   - `Ingest Browser Event` (Bắn sự kiện `TAB_HIDDEN`)
+   - `Ingest AI Learning Event` (Bắn sự kiện `EYES_CLOSED_LONG`)
+   - `Idempotent Retry` (Gửi lại cùng `event_id` $\rightarrow$ kiểm tra phản hồi `200 OK`)
+   - `Get Session Events` & `Get Session Report`
+   - `Pause Session` $\rightarrow$ `Resume Session (Start)` $\rightarrow$ `End Session`
+   - `Teacher List Sessions` (Giảng viên kiểm tra phiên có grant)
+
+### Bước 3: Chạy Unit Tests tự động
 ```bash
-psql "$DATABASE_URL" \
-  -v instructor_email='instructor.demo@university.edu.vn' \
-  -v session_id='ab67e8c2-9cc0-4b3c-8e1d-fc944b7c9102' \
-  -f database/grant-instructor-session.sql
+pytest
 ```
+Bộ kiểm thử gồm 19 test cases tự động chạy trên SQLite in-memory, kiểm chứng đầy đủ tính đúng đắn của logic vòng đời phiên, chống gian lận nguồn phát, cơ chế retry idempotent và ma trận phân quyền RBAC.

@@ -1,0 +1,63 @@
+{
+  "id": "bf50b6c3-53ab-4316-a7b0-dceae7efcc01",
+  "name": "Group 3 - Local Session Event API",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "enabled": true
+    },
+    {
+      "key": "learnerToken",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "instructorToken",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "aiLearningToken",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "aiExamToken",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "sessionId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "eventId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "aiEventId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "spoofEventId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "occurredAt",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "examSessionId",
+      "value": "",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_using": "Postman/11"
+}
