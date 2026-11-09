@@ -6,7 +6,7 @@ Tên đề tài gốc: *Design and Development of an AI-Based System for Learnin
 
 ## Trạng thái
 
-Chỉ có cấu trúc repository, tài liệu phối hợp, schema **DRAFT** và payload tổng hợp. Chưa có AI inference, rule engine, REST API, database hay giao diện chạy được. Chưa chọn framework backend/frontend. Không có kết quả benchmark hoặc user study.
+Repository có cấu trúc nền tảng, tài liệu phối hợp, schema **DRAFT** và payload tổng hợp. AI Core có [PoC và benchmark cục bộ T03](ai-core/t03-report.md).
 
 ## Thành viên và cấu trúc
 
