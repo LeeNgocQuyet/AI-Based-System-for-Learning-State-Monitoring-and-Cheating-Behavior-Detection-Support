@@ -1,0 +1,90 @@
+/* =============================================
+   EduFocus — CSS Variables & Reset
+   ============================================= */
+
+:root {
+  --bg: #f5f7f3;
+  --surface: #ffffff;
+  --ink: #202e29;
+  --muted: #65766d;
+  --primary: #34745e;
+  --primary-dark: #245744;
+  --primary-soft: #e7f3eb;
+  --blue: #456fc0;
+  --blue-soft: #eef2fb;
+  --amber: #99631e;
+  --amber-soft: #fff4df;
+  --red: #b34e49;
+  --red-soft: #fff0ed;
+  --line: #e4ece7;
+  --shadow: 0 4px 16px rgba(37,65,48,.045);
+  --radius: 16px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --transition: 0.18s ease;
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --topbar-h: 60px;
+  --sidebar-w: 240px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.55;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+a:hover { text-decoration: underline; }
+
+button { font-family: inherit; cursor: pointer; }
+
+img, video { max-width: 100%; display: block; }
+
+ul, ol { list-style: none; }
+
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+p { color: var(--muted); }
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #c8d4cc; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #a0b0a8; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
