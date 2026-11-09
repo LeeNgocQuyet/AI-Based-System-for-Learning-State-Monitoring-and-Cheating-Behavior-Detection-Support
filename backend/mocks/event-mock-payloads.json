@@ -1,0 +1,255 @@
+{
+  "contract_version": "1.1.0",
+  "session_create_request": {
+    "session_type": "LEARNING"
+  },
+  "session_create_response": {
+    "data": {
+      "session_id": "8d33d0e6-5b1a-4bc6-a4be-6d56e5f9d101",
+      "session_type": "LEARNING",
+      "status": "ACTIVE",
+      "started_at": "2026-11-05T08:30:00.000Z",
+      "ended_at": null,
+      "duration_ms": null
+    }
+  },
+  "session_status_updates": {
+    "pause_request": {
+      "status": "PAUSED"
+    },
+    "resume_request": {
+      "status": "ACTIVE"
+    },
+    "end_request": {
+      "status": "ENDED"
+    }
+  },
+  "my_sessions_response": {
+    "data": [
+      {
+        "session_id": "8d33d0e6-5b1a-4bc6-a4be-6d56e5f9d101",
+        "session_type": "LEARNING",
+        "status": "ENDED",
+        "started_at": "2026-11-05T08:30:00.000Z",
+        "ended_at": "2026-11-05T09:15:00.000Z",
+        "duration_ms": 2500000
+      },
+      {
+        "session_id": "ab67e8c2-9cc0-4b3c-8e1d-fc944b7c9102",
+        "session_type": "EXAM",
+        "status": "ENDED",
+        "started_at": "2026-11-05T09:30:00.000Z",
+        "ended_at": "2026-11-05T10:15:00.000Z",
+        "duration_ms": 2700000
+      }
+    ],
+    "page": 1,
+    "page_size": 20,
+    "total": 2
+  },
+  "teacher_sessions_response": {
+    "data": [
+      {
+        "session_id": "ab67e8c2-9cc0-4b3c-8e1d-fc944b7c9102",
+        "session_type": "EXAM",
+        "status": "ACTIVE",
+        "started_at": "2026-11-05T09:30:00.000Z",
+        "ended_at": null,
+        "duration_ms": 1800000,
+        "learner_id": "0d02e9d4-931b-44b3-83c3-9f7d83a8a201",
+        "learner_display_name": "Nguyễn Văn Sinh Viên (B22DCCN001)",
+        "event_count": 3,
+        "high_severity_count": 1
+      }
+    ],
+    "page": 1,
+    "page_size": 20,
+    "total": 1
+  },
+  "event_ingest_requests": [
+    {
+      "event_id": "9c2d08a4-6f33-4b9c-88c5-4139e474c201",
+      "schema_version": "1.0.0",
+      "session_id": "8d33d0e6-5b1a-4bc6-a4be-6d56e5f9d101",
+      "event_type": "EYES_CLOSED_LONG",
+      "occurred_at": "2026-11-05T08:35:12.345Z",
+      "source": "AI_LEARNING",
+      "duration_ms": 4200,
+      "confidence": 0.94,
+      "metadata": {
+        "eye_closure_ms": 4200
+      }
+    },
+    {
+      "event_id": "4bdca90b-aef0-47f3-9a7c-375f34057c02",
+      "schema_version": "1.0.0",
+      "session_id": "8d33d0e6-5b1a-4bc6-a4be-6d56e5f9d101",
+      "event_type": "YAWN_DETECTED",
+      "occurred_at": "2026-11-05T08:37:08.000Z",
+      "source": "AI_LEARNING",
+      "confidence": 0.89,
+      "metadata": {
+        "yawn_probability": 0.89
+      }
+    },
+    {
+      "event_id": "25ba15ac-3fa0-4df1-b4f8-77ddf7b76111",
+      "schema_version": "1.0.0",
+      "session_id": "8d33d0e6-5b1a-4bc6-a4be-6d56e5f9d101",
+      "event_type": "HEAD_NOD_DETECTED",
+      "occurred_at": "2026-11-05T08:36:10.000Z",
+      "source": "AI_LEARNING",
+      "duration_ms": 2300,
+      "confidence": 0.88,
+      "metadata": {
+        "nod_count": 2
+      }
+    },
+    {
+      "event_id": "e22a7c24-4f4e-4d1e-8c2f-e6db43d14a03",
+      "schema_version": "1.0.0",
+      "session_id": "8d33d0e6-5b1a-4bc6-a4be-6d56e5f9d101",
+      "event_type": "FACE_NOT_DETECTED",
+      "occurred_at": "2026-11-05T08:39:33.000Z",
+      "source": "AI_LEARNING",
+      "duration_ms": 6500,
+      "confidence": 0.96,
+      "metadata": {
+        "face_count": 0
+      }
+    },
+    {
+      "event_id": "6a173d0d-f092-47b4-b3af-8c542f041a04",
+      "schema_version": "1.0.0",
+      "session_id": "8d33d0e6-5b1a-4bc6-a4be-6d56e5f9d101",
+      "event_type": "LOOK_AWAY_DETECTED",
+      "occurred_at": "2026-11-05T08:42:10.000Z",
+      "source": "AI_LEARNING",
+      "duration_ms": 5100,
+      "confidence": 0.82,
+      "metadata": {
+        "direction": "LEFT"
+      }
+    },
+    {
+      "event_id": "5bd52fe5-cb1e-48aa-94a1-5d431b1b7001",
+      "schema_version": "1.0.0",
+      "session_id": "ab67e8c2-9cc0-4b3c-8e1d-fc944b7c9102",
+      "event_type": "TAB_HIDDEN",
+      "occurred_at": "2026-11-05T09:41:20.000Z",
+      "source": "BROWSER",
+      "duration_ms": 3200,
+      "metadata": {
+        "visibility_state": "hidden"
+      }
+    },
+    {
+      "event_id": "ab8b16bd-77db-41b4-aef4-1abca39ce102",
+      "schema_version": "1.0.0",
+      "session_id": "ab67e8c2-9cc0-4b3c-8e1d-fc944b7c9102",
+      "event_type": "MULTIPLE_FACES_DETECTED",
+      "occurred_at": "2026-11-05T09:45:40.000Z",
+      "source": "AI_EXAM",
+      "confidence": 0.91,
+      "metadata": {
+        "face_count": 2
+      }
+    },
+    {
+      "event_id": "c5e5476f-ae9c-4d24-bb4b-bb1d6c5d5103",
+      "schema_version": "1.0.0",
+      "session_id": "ab67e8c2-9cc0-4b3c-8e1d-fc944b7c9102",
+      "event_type": "PHONE_DETECTED",
+      "occurred_at": "2026-11-05T09:48:05.000Z",
+      "source": "AI_EXAM",
+      "confidence": 0.86,
+      "metadata": {
+        "object_count": 1
+      }
+    },
+    {
+      "event_id": "2a99a9d4-9b19-49c6-85d3-0d1e9af15110",
+      "schema_version": "1.0.0",
+      "session_id": "ab67e8c2-9cc0-4b3c-8e1d-fc944b7c9102",
+      "event_type": "CAMERA_LOST",
+      "occurred_at": "2026-11-05T09:50:10.000Z",
+      "source": "BROWSER",
+      "metadata": {
+        "reason": "MEDIA_TRACK_ENDED"
+      }
+    },
+    {
+      "event_id": "bf2114cc-aa2f-4020-bec6-22ecf7161a12",
+      "schema_version": "1.0.0",
+      "session_id": "ab67e8c2-9cc0-4b3c-8e1d-fc944b7c9102",
+      "event_type": "CONNECTION_LOST",
+      "occurred_at": "2026-11-05T09:52:00.000Z",
+      "source": "SYSTEM",
+      "metadata": {
+        "component": "event_ingestion"
+      }
+    }
+  ],
+  "event_record_response": {
+    "data": {
+      "event_id": "9c2d08a4-6f33-4b9c-88c5-4139e474c201",
+      "schema_version": "1.0.0",
+      "session_id": "8d33d0e6-5b1a-4bc6-a4be-6d56e5f9d101",
+      "event_type": "EYES_CLOSED_LONG",
+      "occurred_at": "2026-11-05T08:35:12.345Z",
+      "received_at": "2026-11-05T08:35:12.512Z",
+      "source": "AI_LEARNING",
+      "severity": "MEDIUM",
+      "duration_ms": 4200,
+      "confidence": 0.94,
+      "message": "Hệ thống ghi nhận dấu hiệu nhắm mắt kéo dài.",
+      "is_reviewed": false,
+      "reviewed_at": null,
+      "metadata": {
+        "eye_closure_ms": 4200
+      }
+    }
+  },
+  "event_review_response": {
+    "data": {
+      "event_id": "9c2d08a4-6f33-4b9c-88c5-4139e474c201",
+      "schema_version": "1.0.0",
+      "session_id": "8d33d0e6-5b1a-4bc6-a4be-6d56e5f9d101",
+      "event_type": "EYES_CLOSED_LONG",
+      "occurred_at": "2026-11-05T08:35:12.345Z",
+      "received_at": "2026-11-05T08:35:12.512Z",
+      "source": "AI_LEARNING",
+      "severity": "MEDIUM",
+      "duration_ms": 4200,
+      "confidence": 0.94,
+      "message": "Hệ thống ghi nhận dấu hiệu nhắm mắt kéo dài.",
+      "is_reviewed": true,
+      "reviewed_at": "2026-11-05T10:00:00.000Z",
+      "metadata": {
+        "eye_closure_ms": 4200
+      }
+    }
+  },
+  "exam_session_report_response": {
+    "data": {
+      "session_id": "ab67e8c2-9cc0-4b3c-8e1d-fc944b7c9102",
+      "session_type": "EXAM",
+      "status": "ENDED",
+      "started_at": "2026-11-05T09:30:00.000Z",
+      "ended_at": "2026-11-05T10:15:00.000Z",
+      "duration_ms": 2700000,
+      "event_count": 3,
+      "counts_by_type": {
+        "TAB_HIDDEN": 1,
+        "MULTIPLE_FACES_DETECTED": 1,
+        "PHONE_DETECTED": 1
+      },
+      "counts_by_severity": {
+        "INFO": 0,
+        "LOW": 0,
+        "MEDIUM": 2,
+        "HIGH": 1
+      }
+    }
+  }
+}

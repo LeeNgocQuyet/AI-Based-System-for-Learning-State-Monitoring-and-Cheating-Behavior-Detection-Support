@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:group3:learning-monitor:event-record:1.0.0",
+  "title": "Stored Event Record v1",
+  "description": "Canonical event record returned by Backend after validation and severity normalization.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "event_id": {"type": "string", "format": "uuid"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "session_id": {"type": "string", "format": "uuid"},
+    "event_type": {
+      "type": "string",
+      "enum": ["EYES_CLOSED_LONG", "YAWN_DETECTED", "HEAD_NOD_DETECTED", "LOOK_AWAY_DETECTED", "FACE_NOT_DETECTED", "MULTIPLE_FACES_DETECTED", "PHONE_DETECTED", "TAB_HIDDEN", "CAMERA_LOST", "CONNECTION_LOST"]
+    },
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "received_at": {"type": "string", "format": "date-time", "description": "Timestamp assigned by Backend when the event is accepted."},
+    "source": {"type": "string", "enum": ["AI_LEARNING", "AI_EXAM", "BROWSER", "SYSTEM"]},
+    "severity": {"type": "string", "enum": ["INFO", "LOW", "MEDIUM", "HIGH"], "description": "Normalized by Backend policy; not a conclusion that the learner cheated."},
+    "duration_ms": {"type": "integer", "minimum": 0},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "message": {"type": "string", "maxLength": 500, "description": "Neutral display text generated or normalized by Backend."},
+    "is_reviewed": {"type": "boolean", "default": false, "description": "Flag indicating whether an authorized teacher has reviewed this event."},
+    "reviewed_at": {"type": ["string", "null"], "format": "date-time", "description": "Timestamp when the event was reviewed by teacher."},
+    "metadata": {"type": "object", "additionalProperties": true}
+  },
+  "required": ["event_id", "schema_version", "session_id", "event_type", "occurred_at", "received_at", "source", "severity", "message"]
+}
