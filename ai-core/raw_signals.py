@@ -1,4 +1,4 @@
-"""AI Core v1 CLI for extracting raw signals from local video or webcam."""
+"""AI Core v2 CLI for extracting raw signals from local video or webcam."""
 
 import argparse
 from contextlib import ExitStack
@@ -29,6 +29,7 @@ EMPTY_MEASUREMENTS = dict.fromkeys((
     "mouth_aspect_ratio", "head_pose_deg",
 ))
 MAX_CONSECUTIVE_READ_FAILURES = 10
+LOW_LIGHT_LUT = np.rint(np.sqrt(np.arange(256) / 255) * 255).astype(np.uint8)
 
 
 def aspect_ratio(points, horizontal, vertical):
@@ -74,7 +75,7 @@ def measure(result, width, height, detections=None):
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--version", action="version", version="AI Core 1.0.0")
+    parser.add_argument("--version", action="version", version="AI Core 2.0.0")
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--video", type=Path)
     source.add_argument("--camera", type=int)
@@ -84,6 +85,8 @@ def parse_args():
     parser.add_argument("--max-faces", type=int, default=2)
     parser.add_argument("--yunet-model", type=Path, help="Optional YuNet ONNX for face count")
     parser.add_argument("--blendshapes", action="store_true", help="Write diagnostic CSV")
+    parser.add_argument("--recover-low-light", action="store_true",
+                        help="Retry dark frames with no detected landmarks")
     parser.add_argument("--synthetic", action="store_true", help="Mark a constructed fixture")
     parser.add_argument("--video-start-utc", help="Original video start as ISO 8601 UTC, ending in Z")
     args = parser.parse_args()
@@ -126,14 +129,19 @@ def run(args, stop):
                 str(args.yunet_model), "", (320, 320), 0.85, 0.3, 5000
             )
         args.output.mkdir(parents=True, exist_ok=False)
-        with (mp.tasks.vision.FaceLandmarker.create_from_options(options) as landmarker,
-              (args.output / "raw-signals.jsonl").open("x", encoding="utf-8") as output):
-            extract(args, capture, landmarker, output, fps, is_camera, detector, stop)
+        with ExitStack() as stack:
+            landmarker = stack.enter_context(mp.tasks.vision.FaceLandmarker.create_from_options(options))
+            output = stack.enter_context((args.output / "raw-signals.jsonl").open("x", encoding="utf-8"))
+            recovery = None
+            if args.recover_low_light:
+                options.running_mode = mp.tasks.vision.RunningMode.IMAGE
+                recovery = stack.enter_context(mp.tasks.vision.FaceLandmarker.create_from_options(options))
+            extract(args, capture, landmarker, output, fps, is_camera, detector, stop, recovery)
     finally:
         capture.release()
 
 
-def extract(args, capture, landmarker, output, fps, is_camera, detector, stop):
+def extract(args, capture, landmarker, output, fps, is_camera, detector, stop, recovery=None):
     source = "webcam" if is_camera else "video"
     session_id = uuid4().hex
     origin = perf_counter()
@@ -143,6 +151,7 @@ def extract(args, capture, landmarker, output, fps, is_camera, detector, stop):
     failures = 0
     expected_frames = capture.get(cv2.CAP_PROP_FRAME_COUNT) if not is_camera else None
     with ExitStack() as stack:
+        failure_log = stack.enter_context((args.output / "failure-cases.jsonl").open("x", encoding="utf-8"))
         diagnostic = None
         if args.blendshapes:
             file = stack.enter_context((args.output / "blendshapes.csv").open(
@@ -158,11 +167,16 @@ def extract(args, capture, landmarker, output, fps, is_camera, detector, stop):
                 if expected_frames and sequence < expected_frames:
                     raise ValueError(f"Video read ended at frame {sequence}; container reports {expected_frames:g}")
                 break
-            last_ms, _ = frame_offset_ms(capture, is_camera, fps, origin, sequence, last_ms)
+            previous_ms = last_ms
+            last_ms, clock = frame_offset_ms(capture, is_camera, fps, origin, sequence, last_ms)
+            gap = last_ms - previous_ms if previous_ms >= 0 else None
             scores = {}
+            retry = None
             if ok:
                 failures = 0
-                measurements, quality, scores = analyze_frame(frame, last_ms, landmarker, detector)
+                measurements, quality, scores, retry = analyze_frame(
+                    frame, last_ms, landmarker, detector, recovery
+                )
             else:
                 failures += 1
                 measurements, quality = EMPTY_MEASUREMENTS, "unavailable"
@@ -180,6 +194,13 @@ def extract(args, capture, landmarker, output, fps, is_camera, detector, stop):
                 "quality": quality,
                 "measurements": measurements,
             }, allow_nan=False) + "\n")
+            if quality != "ok" or retry or (fps and gap is not None and gap > 2000 / fps):
+                failure_log.write(json.dumps({
+                    "sequence": sequence, "offset_ms": last_ms, "clock": clock,
+                    "gap_ms": gap, "quality": quality, "face_count": measurements["face_count"],
+                    "low_light_retry": retry,
+                    "missing_measurements": [key for key, value in measurements.items() if value is None],
+                }, allow_nan=False) + "\n")
             if diagnostic is not None:
                 diagnostic.writerow((sequence, last_ms, *(scores.get(name) for name in BLENDSHAPES)))
             sequence += 1
@@ -192,10 +213,21 @@ def extract(args, capture, landmarker, output, fps, is_camera, detector, stop):
     print(f"Wrote {sequence} raw signal records to {args.output}")
 
 
-def analyze_frame(frame, offset_ms, landmarker, detector):
+def analyze_frame(frame, offset_ms, landmarker, detector, recovery=None):
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
     result = landmarker.detect_for_video(image, offset_ms)
+    retry = None
+    if recovery is not None and not result.face_landmarks:
+        luminance = cv2.cvtColor(frame[::8, ::8], cv2.COLOR_BGR2GRAY)
+        if luminance.mean() < 48 and luminance.std() >= 1.5:
+            brighter = cv2.LUT(rgb, LOW_LIGHT_LUT)
+            candidate = recovery.detect(mp.Image(image_format=mp.ImageFormat.SRGB, data=brighter))
+            retry = "no_landmarks"
+            if candidate.face_landmarks:
+                result = candidate
+                frame = cv2.cvtColor(brighter, cv2.COLOR_RGB2BGR)
+                retry = "recovered"
     height, width = frame.shape[:2]
     detections = None
     if detector is not None:
@@ -206,7 +238,7 @@ def analyze_frame(frame, offset_ms, landmarker, detector):
     measurements, quality, matched = measure(result, width, height, detections)
     scores = {item.category_name: item.score for item in result.face_blendshapes[0]} \
         if matched and result.face_blendshapes else {}
-    return measurements, quality, scores
+    return measurements, quality, scores, retry
 
 
 if __name__ == "__main__":

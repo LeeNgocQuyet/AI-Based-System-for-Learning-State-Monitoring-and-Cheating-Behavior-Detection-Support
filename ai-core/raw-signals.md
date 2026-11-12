@@ -1,4 +1,4 @@
-# AI Core v1 · T07, T08 và T15
+# AI Core v2 · T07, T08, T15 và T21
 
 Từ thư mục gốc, dùng Python, dependencies và model Face Landmarker float16 v1 của [T03](t03-report.md). Mỗi lượt cần thư mục đầu ra mới.
 
@@ -103,3 +103,22 @@ Lấy mẫu từ clip phỏng vấn của Julieta Vergara Bada (CC BY 4.0), dự
 | YuNet | 10/17 | 3/3 | 0,47 mặt |
 
 YuNet trả số mặt cao hơn nhãn ở 7 frame. Detector đếm trên toàn ảnh còn nhãn chỉ bao gồm tiền cảnh, nên các trường hợp vượt nhãn có thể bao gồm mặt hậu cảnh. Phép thử chỉ đối chiếu số lượng, chưa xác minh từng hộp mặt. Log gốc của các lượt thử nằm trong `ai-core/results/t07-t08/`.
+
+## T21 · Kiểm tra điều kiện khó
+
+Thêm `--recover-low-light` để thử lại khi MediaPipe không có landmarks và mẫu độ sáng 8 pixel một điểm có trung bình dưới 48, độ lệch chuẩn từ 1,5 trở lên trên thang 0–255. Pipeline áp dụng gamma 0,5 bằng bảng tra và chạy bộ suy luận IMAGE riêng trên frame đã làm sáng. Kết quả thử lại dùng timestamp của frame gốc. Bật tùy chọn này khi thử nguồn thiếu sáng. Phiên bản module là `2.0.0`.
+
+```powershell
+& $p ai-core/raw_signals.py --video "duong-dan/video.avi" --model $model --output ai-core/results/t21-demo --recover-low-light
+```
+
+`failure-cases.jsonl` ghi frame thiếu phép đo, lần thử lại và khoảng thời gian vượt hai chu kỳ FPS danh định khi nguồn báo FPS. Mỗi dòng có sequence, offset, nguồn đồng hồ, khoảng cách thời gian, chất lượng, số mặt, tên phép đo bị thiếu và kết quả thử lại. Một khoảng thời gian dài có thể xuất hiện khi FPS thay đổi hoặc khi mất frame. Ngưỡng chẩn đoán này phục vụ ghi log.
+
+| Điều kiện | Kết quả |
+| --- | --- |
+| Thiếu sáng mô phỏng | Dùng 98 frame RAVDESS ở mỗi mức nhân sáng 1, 0,06, 0,03, 0,02 và 0,01. Chèn 15 frame đen trước mỗi mức. Ở mức 0,02, số frame có đúng một mặt và pose tăng từ **55/98 lên 98/98**. Ba mức sáng hơn đạt 98/98 ở cả hai lượt. Mức 0,01 vẫn 0/98. Cả 75 frame đen giữ số mặt 0. |
+| Góc mặt khó | Chuỗi BIWI 06 có pose trên **60/109** frame kể cả frame mốc. 49 frame không có mặt được log. Chế độ phục hồi không kích hoạt trên chuỗi này. |
+| Kính và thay đổi góc mặt | Lấy mỗi cặp ảnh–pose thứ năm của chuỗi BIWI 03, quan sát thấy người đeo kính. Có pose trên **118/146** frame. 28 frame không có mặt được log. Clip có đồng thời kính và thay đổi góc đầu, nên kết quả không tách riêng ảnh hưởng của kính. |
+| Nhịp frame biến động | Mô phỏng bộ đọc trả offset 0, 33, 153 và 174 ms ở FPS danh định 30. Đầu ra giữ đủ bốn offset và log khoảng nhảy 120 ms ở sequence 2. |
+
+Log cục bộ nằm trong `ai-core/results/t21/`. Kết quả thiếu sáng đo khả năng khôi phục phép đo trên clip làm tối có kiểm soát. Cần thêm video thiếu sáng thật để đo tỷ lệ phát hiện nhầm và sai số góc ở các frame được khôi phục.
