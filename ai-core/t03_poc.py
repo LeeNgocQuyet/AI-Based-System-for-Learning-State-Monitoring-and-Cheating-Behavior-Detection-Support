@@ -57,6 +57,22 @@ def pose_angles(matrix):
     return (x, y, z)
 
 
+def frame_offset_ms(capture, is_camera, fps, origin, sequence, last_ms):
+    if is_camera:
+        timestamp = (perf_counter() - origin) * 1000
+        clock = "monotonic_capture"
+    else:
+        timestamp = capture.get(cv2.CAP_PROP_POS_MSEC)
+        clock = "video_position"
+        if (not math.isfinite(timestamp) or timestamp < 0
+                or (sequence and timestamp <= last_ms)):
+            if fps is None:
+                raise ValueError("Video has no usable timestamps or nominal FPS")
+            timestamp = sequence * 1000 / fps
+            clock = "frame_index_over_nominal_fps"
+    return max(last_ms + 1, round(timestamp)), clock
+
+
 def draw_overlay(frame, points, angles):
     if points is not None:
         for feature, contours in FEATURES.items():
@@ -110,20 +126,10 @@ def run(args):
                     break
                 height, width = frame.shape[:2]
                 sequence = len(rows)
-                if args.camera is not None:
-                    timestamp = (perf_counter() - origin) * 1000
-                    clock_sources.add("monotonic_capture")
-                else:
-                    timestamp = capture.get(cv2.CAP_PROP_POS_MSEC)
-                    if (not math.isfinite(timestamp) or timestamp < 0
-                            or (sequence and timestamp <= last_ms)):
-                        if fps is None:
-                            raise ValueError("Video has no usable timestamps or nominal FPS")
-                        timestamp = sequence * 1000 / fps
-                        clock_sources.add("frame_index_over_nominal_fps")
-                    else:
-                        clock_sources.add("video_position")
-                last_ms = max(last_ms + 1, round(timestamp))
+                last_ms, clock = frame_offset_ms(
+                    capture, args.camera is not None, fps, origin, sequence, last_ms
+                )
+                clock_sources.add(clock)
 
                 rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
