@@ -1,4 +1,4 @@
-# T07 và T08 · Trích xuất raw signals
+# AI Core v1 · T07, T08 và T15
 
 Từ thư mục gốc, dùng Python, dependencies và model Face Landmarker float16 v1 của [T03](t03-report.md). Mỗi lượt cần thư mục đầu ra mới.
 
@@ -9,10 +9,13 @@ $model = "ai-core/results/t03/face_landmarker.task"
 & $p ai-core/raw_signals.py --camera 0 --max-frames 120 --model $model --output ai-core/results/raw-webcam
 ```
 
-- `raw-signals.jsonl` ghi một bản ghi mỗi frame giải mã được, theo schema 0.1.0-draft. Với video, dùng `offset_ms` để khớp nhãn và `--video-start-utc` nếu biết thời điểm bắt đầu ghi hình. Khi bỏ tùy chọn đó, `timestamp` dùng thời điểm bắt đầu lượt đọc cộng offset, vì thời điểm ghi gốc chưa biết. Dùng `--synthetic` cho fixture được dựng.
+Chạy lệnh CLI để bắt đầu và nhấn **Ctrl+C** để dừng sau thao tác đọc hoặc phân tích đang chạy. CLI đóng camera, JSONL và CSV trước khi thoát. Bỏ `--max-frames` để chạy webcam đến khi dừng. Video tự dừng ở cuối file. Dùng `--version` để xem phiên bản module. Phiên bản contract do nhóm quản lý riêng.
+
+- `raw-signals.jsonl` ghi một bản ghi mỗi frame giải mã được hoặc mỗi lần đọc webcam thất bại, theo schema 0.1.0-draft. `sequence` bắt đầu từ 0. Với video, dùng `offset_ms` để khớp nhãn và `--video-start-utc` nếu biết thời điểm bắt đầu ghi hình. Khi bỏ tùy chọn đó, `timestamp` dùng thời điểm bắt đầu lượt đọc cộng offset, vì thời điểm ghi gốc chưa biết. Webcam đo offset bằng đồng hồ đơn điệu. Dùng `--synthetic` cho fixture được dựng. [Mẫu JSONL](../shared/examples/raw-signals.sample.jsonl)
+- Khi đọc webcam thất bại, CLI ghi `quality=unavailable` với mọi phép đo là `null`, chờ 50 ms rồi thử tiếp. Sau 10 lần thất bại liên tiếp, CLI báo lỗi và giữ log đã ghi. `--max-frames` tính cả các lần đọc thất bại. Với video, CLI giữ khoảng nhảy timestamp mà bộ giải mã cung cấp và báo lỗi nếu dừng trước số frame mà container báo. Nếu container không cung cấp số frame thì lần đọc thất bại kết thúc lượt. Số frame bị bỏ qua bên trong driver hoặc bộ giải mã chỉ có thể quan sát nếu nguồn bộc lộ khoảng thời gian hoặc lỗi đọc.
 - `--blendshapes` ghi thêm CSV chứa điểm `eyeBlinkLeft`, `eyeBlinkRight`, `jawOpen` để đối chiếu theo `sequence` và `offset_ms`. Các điểm này độc lập với tỷ lệ EAR/MAR. Cả hai file chỉ lưu số liệu. Event Engine sở hữu ngưỡng và luật theo thời gian.
 - EAR là trung bình hai khoảng cách giữa mí trên/dưới chia khoảng cách giữa hai khóe mắt. MAR là trung bình ba khoảng cách giữa môi trong trên/dưới chia khoảng cách giữa hai khóe môi trong. Dùng tọa độ pixel 2D và trái/phải theo giải phẫu người trong hình. Các chỉ số cụ thể nằm trong `raw_signals.py`.
-- Mặc định số mặt là số kết quả MediaPipe trả về, giới hạn bởi `--max-faces` (mặc định 2). Nếu có `--yunet-model`, số mặt đến từ YuNet. Presence có thể suy ra từ count dương. Phép đo mắt, miệng và pose yêu cầu đúng một bộ landmarks. Ở chế độ YuNet, cần thêm đúng một hộp mặt và tâm landmarks nằm trong hộp. Frame thiếu điều kiện ghi `quality=degraded` và các phép đo theo mặt là `null`. Lỗi đọc webcam hoặc inference dừng lượt và trả mã lỗi. Các dòng đã ghi trước lỗi vẫn dùng được.
+- Mặc định số mặt là số kết quả MediaPipe trả về, giới hạn bởi `--max-faces` (mặc định 2). Nếu có `--yunet-model`, số mặt đến từ YuNet. Presence có thể suy ra từ count dương. Phép đo mắt, miệng và pose yêu cầu đúng một bộ landmarks. Ở chế độ YuNet, cần thêm đúng một hộp mặt và tâm landmarks nằm trong hộp. Frame đọc được nhưng thiếu điều kiện ghi `quality=degraded`. Lỗi inference dừng lượt và giữ các dòng đã ghi.
 - Pose là góc độ từ phần xoay của ma trận MediaPipe, với yaw quanh Y, pitch quanh X và roll quanh Z theo dấu phân rã OpenCV trên đầu vào chưa lật. Zero tương ứng với hệ mặt chuẩn của model. Kết quả roll trên ảnh xoay được kiểm tra bên dưới. Cần mẫu góc thật để xác nhận cả ba trục.
 
 ## Kiểm chứng

@@ -1,4 +1,4 @@
-"""Extract draft AI Core raw signals from a local video or webcam."""
+"""AI Core v1 CLI for extracting raw signals from local video or webcam."""
 
 import argparse
 from contextlib import ExitStack
@@ -7,6 +7,8 @@ from datetime import datetime, timedelta, timezone
 import json
 import math
 from pathlib import Path
+import signal
+from threading import Event
 from time import perf_counter
 from uuid import uuid4
 
@@ -22,6 +24,11 @@ LEFT_EYE = (362, 385, 387, 263, 373, 380)
 RIGHT_EYE = (33, 160, 158, 133, 153, 144)
 INNER_LIPS = (78, 82, 13, 312, 308, 317, 14, 87)
 BLENDSHAPES = ("eyeBlinkLeft", "eyeBlinkRight", "jawOpen")
+EMPTY_MEASUREMENTS = dict.fromkeys((
+    "face_count", "eye_aspect_ratio_left", "eye_aspect_ratio_right",
+    "mouth_aspect_ratio", "head_pose_deg",
+))
+MAX_CONSECUTIVE_READ_FAILURES = 10
 
 
 def aspect_ratio(points, horizontal, vertical):
@@ -40,13 +47,7 @@ def eye_ratio(points, indices):
 
 def measure(result, width, height, detections=None):
     count = len(result.face_landmarks) if detections is None else len(detections)
-    measurements = {
-        "face_count": count,
-        "eye_aspect_ratio_left": None,
-        "eye_aspect_ratio_right": None,
-        "mouth_aspect_ratio": None,
-        "head_pose_deg": None,
-    }
+    measurements = {**EMPTY_MEASUREMENTS, "face_count": count}
     if count != 1 or len(result.face_landmarks) != 1:
         return measurements, "degraded", False
 
@@ -73,6 +74,7 @@ def measure(result, width, height, detections=None):
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--version", action="version", version="AI Core 1.0.0")
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--video", type=Path)
     source.add_argument("--camera", type=int)
@@ -93,8 +95,6 @@ def parse_args():
         parser.error("Model and video must be existing files")
     if args.yunet_model is not None and not args.yunet_model.is_file():
         parser.error("YuNet model must be an existing ONNX file")
-    if args.camera is not None and args.max_frames is None:
-        parser.error("--camera requires --max-frames")
     if args.video_start_utc is not None:
         try:
             if args.video is None or not args.video_start_utc.endswith("Z"):
@@ -105,7 +105,7 @@ def parse_args():
     return args
 
 
-def run(args):
+def run(args, stop):
     is_camera = args.camera is not None
     options = mp.tasks.vision.FaceLandmarkerOptions(
         base_options=mp.tasks.BaseOptions(model_asset_path=str(args.model)),
@@ -128,18 +128,20 @@ def run(args):
         args.output.mkdir(parents=True, exist_ok=False)
         with (mp.tasks.vision.FaceLandmarker.create_from_options(options) as landmarker,
               (args.output / "raw-signals.jsonl").open("x", encoding="utf-8") as output):
-            extract(args, capture, landmarker, output, fps, is_camera, detector)
+            extract(args, capture, landmarker, output, fps, is_camera, detector, stop)
     finally:
         capture.release()
 
 
-def extract(args, capture, landmarker, output, fps, is_camera, detector):
+def extract(args, capture, landmarker, output, fps, is_camera, detector, stop):
     source = "webcam" if is_camera else "video"
     session_id = uuid4().hex
     origin = perf_counter()
     start_utc = args.video_start_utc or datetime.now(timezone.utc)
     last_ms = -1
     sequence = 0
+    failures = 0
+    expected_frames = capture.get(cv2.CAP_PROP_FRAME_COUNT) if not is_camera else None
     with ExitStack() as stack:
         diagnostic = None
         if args.blendshapes:
@@ -148,24 +150,22 @@ def extract(args, capture, landmarker, output, fps, is_camera, detector):
             ))
             diagnostic = csv.writer(file)
             diagnostic.writerow(("sequence", "offset_ms", *BLENDSHAPES))
-        while args.max_frames is None or sequence < args.max_frames:
+        while not stop.is_set() and (args.max_frames is None or sequence < args.max_frames):
             ok, frame = capture.read()
-            if not ok:
-                if is_camera:
-                    raise ValueError("Webcam frame read failed")
+            if stop.is_set():
+                break
+            if not ok and not is_camera:
+                if expected_frames and sequence < expected_frames:
+                    raise ValueError(f"Video read ended at frame {sequence}; container reports {expected_frames:g}")
                 break
             last_ms, _ = frame_offset_ms(capture, is_camera, fps, origin, sequence, last_ms)
-            rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
-            result = landmarker.detect_for_video(image, last_ms)
-            height, width = frame.shape[:2]
-            detections = None
-            if detector is not None:
-                if detector.getInputSize() != (width, height):
-                    detector.setInputSize((width, height))
-                _, faces = detector.detect(frame)
-                detections = faces if faces is not None else ()
-            measurements, quality, matched = measure(result, width, height, detections)
+            scores = {}
+            if ok:
+                failures = 0
+                measurements, quality, scores = analyze_frame(frame, last_ms, landmarker, detector)
+            else:
+                failures += 1
+                measurements, quality = EMPTY_MEASUREMENTS, "unavailable"
             timestamp = start_utc + timedelta(milliseconds=last_ms)
             output.write(json.dumps({
                 "schema_version": "0.1.0-draft",
@@ -181,18 +181,39 @@ def extract(args, capture, landmarker, output, fps, is_camera, detector):
                 "measurements": measurements,
             }, allow_nan=False) + "\n")
             if diagnostic is not None:
-                scores = {}
-                if matched and result.face_blendshapes:
-                    scores = {item.category_name: item.score for item in result.face_blendshapes[0]}
                 diagnostic.writerow((sequence, last_ms, *(scores.get(name) for name in BLENDSHAPES)))
             sequence += 1
-    if not sequence:
+            if failures >= MAX_CONSECUTIVE_READ_FAILURES:
+                raise ValueError(f"Webcam failed {failures} consecutive reads")
+            if failures:
+                stop.wait(0.05)
+    if not sequence and not stop.is_set():
         raise ValueError("No decodable frames in the input")
     print(f"Wrote {sequence} raw signal records to {args.output}")
 
 
+def analyze_frame(frame, offset_ms, landmarker, detector):
+    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
+    result = landmarker.detect_for_video(image, offset_ms)
+    height, width = frame.shape[:2]
+    detections = None
+    if detector is not None:
+        if detector.getInputSize() != (width, height):
+            detector.setInputSize((width, height))
+        _, faces = detector.detect(frame)
+        detections = faces if faces is not None else ()
+    measurements, quality, matched = measure(result, width, height, detections)
+    scores = {item.category_name: item.score for item in result.face_blendshapes[0]} \
+        if matched and result.face_blendshapes else {}
+    return measurements, quality, scores
+
+
 if __name__ == "__main__":
+    args = parse_args()
+    stop = Event()
+    signal.signal(signal.SIGINT, lambda *_: stop.set())
     try:
-        run(parse_args())
+        run(args, stop)
     except (OSError, ValueError, RuntimeError) as exc:
         raise SystemExit(str(exc)) from exc
