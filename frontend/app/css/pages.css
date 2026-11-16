@@ -1,0 +1,603 @@
+/* =============================================
+   EduFocus — Page-Specific Styles
+   ============================================= */
+
+/* ---- Auth Pages ---- */
+.auth-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 40px rgba(37, 65, 48, .12);
+  border: 1px solid #e4ece7;
+  width: 100%;
+  max-width: 420px;
+  padding: 36px;
+}
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.auth-brandmark {
+  width: 40px;
+  height: 40px;
+  background: var(--primary);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.auth-brand-name {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.auth-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.auth-sub {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-link-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.auth-demo {
+  margin-top: 20px;
+  padding: 12px 14px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  color: var(--muted);
+  border: 1px dashed #c8d4cc;
+}
+
+.auth-demo strong {
+  color: var(--ink);
+}
+
+/* ---- Teacher Session Page ---- */
+.session-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid #e8eeea;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+
+.session-status-bar .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+  animation: pulse 1.5s infinite;
+  flex-shrink: 0;
+}
+
+.session-elapsed {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.session-label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.session-type-badge {
+  margin-left: auto;
+}
+
+/* ---- Camera wall layout (teacher session) ---- */
+.cam-wall-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+/* ---- Student live page ---- */
+.student-live-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 20px;
+  align-items: start;
+}
+
+.student-live-main {}
+
+.student-live-panel {
+  position: sticky;
+  top: calc(var(--topbar-h) + 20px);
+}
+
+.session-timer-display {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.session-timer-label {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* Timer states */
+.timer-paused .session-timer-display {
+  color: var(--amber);
+}
+
+/* ---- Prepare page ---- */
+.prepare-layout {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.cam-preview-box {
+  background: #1a2420;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  aspect-ratio: 16/9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.cam-preview-box video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cam-status-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, .7);
+  font-size: 0.9rem;
+}
+
+.cam-status-icon {
+  font-size: 2.5rem;
+  opacity: 0.6;
+}
+
+.cam-status-text {
+  font-weight: 600;
+  color: rgba(255, 255, 255, .8);
+}
+
+/* ---- Student webcam mini-preview ---- */
+.mini-cam {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 180px;
+  aspect-ratio: 4/3;
+  background: #1a2420;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 2px solid var(--primary);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, .3);
+  z-index: 80;
+}
+
+.mini-cam video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mini-cam-label {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, .55);
+  color: rgba(255, 255, 255, .85);
+  font-size: 0.65rem;
+  padding: 2px 7px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+
+/* ---- Teacher session student detail ---- */
+.student-monitor-box {
+  background: #1a2420;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  aspect-ratio: 4/3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, .4);
+  font-size: 2rem;
+  margin-bottom: 16px;
+}
+
+/* ---- Reports page ---- */
+.report-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid #f0f4f1;
+}
+
+.report-row:last-child {
+  border-bottom: none;
+}
+
+.report-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.report-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.report-meta {
+  font-size: 0.775rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* ---- Breadcrumb ---- */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.breadcrumb-sep {
+  opacity: 0.4;
+}
+
+.breadcrumb-item {
+  cursor: pointer;
+  color: var(--primary);
+}
+
+.breadcrumb-item:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb-item.current {
+  color: var(--muted);
+  cursor: default;
+}
+
+.breadcrumb-item.current:hover {
+  text-decoration: none;
+}
+
+
+/* ==============================================
+   EduFocus — Live Session Page (student-live.js)
+   ============================================== */
+
+.live-session-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) 320px;
+  gap: 20px;
+  align-items: start;
+}
+
+.live-camera-panel {
+  position: relative;
+  background: #1a2e22;
+  border-radius: 16px 16px 0 0;
+  min-height: 280px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.live-camera-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 70%, rgba(0,0,0,.18));
+  border-radius: 16px 16px 0 0;
+}
+
+.paused-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(20,35,27,.75);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  z-index: 10;
+  border-radius: 16px 16px 0 0;
+}
+.paused-overlay span { font-size: 0.8rem; font-weight: 400; opacity: .75; }
+
+.live-info-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.session-clock-large {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.session-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.events-scroll {
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.event-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 7px 0;
+  border-bottom: 1px solid #f0f4f1;
+  font-size: 0.8rem;
+}
+.event-item:last-child { border-bottom: none; }
+
+.event-time {
+  font-size: 0.72rem;
+  color: var(--muted);
+  flex-shrink: 0;
+  min-width: 48px;
+  font-variant-numeric: tabular-nums;
+  margin-top: 1px;
+}
+
+.event-label {
+  font-weight: 600;
+  color: var(--ink);
+  font-size: 0.8rem;
+}
+
+/* ==============================================
+   EduFocus — Prepare Page (student-prepare.js)
+   ============================================== */
+
+.camera-box {
+  position: relative;
+  width: 100%;
+  min-height: 230px;
+  background: #1a2e22;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #8da995;
+  text-align: center;
+  padding: 24px;
+  background: #182820;
+}
+.camera-placeholder .icon { font-size: 2.5rem; }
+.camera-placeholder h3 { font-size: 1rem; font-weight: 700; color: #c0d4c8; }
+.camera-placeholder p  { font-size: 0.8rem; color: #7a9185; }
+.camera-placeholder.hidden { display: none; }
+
+.camera-status {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,.6);
+  color: #6defa7;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 99px;
+  white-space: nowrap;
+  z-index: 5;
+}
+.camera-status.hidden { display: none; }
+
+.prepare-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.prepare-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #e4ece7;
+  background: var(--bg);
+  transition: all var(--transition);
+}
+.prepare-step.done {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.step-icon { font-size: 1.3rem; flex-shrink: 0; }
+.step-content h4 { font-size: 0.875rem; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+.step-content p  { font-size: 0.775rem; color: var(--muted); }
+
+/* ==============================================
+   EduFocus — Teacher Session toolbar / roster
+   ============================================== */
+
+/* Roster table row clickable actions */
+.roster-row td { cursor: default; }
+
+/* Btn-soft */
+.btn.soft {
+  background: var(--primary-soft);
+  color: var(--primary);
+  border: none;
+}
+.btn.soft:hover:not(:disabled) {
+  background: #d4ebe1;
+}
+
+/* Btn inline styles used in template  */
+.btn.primary   { background: var(--primary);  color: #fff; }
+.btn.secondary { background: #f1f5f1; color: var(--ink); }
+.btn.danger    { background: var(--red);      color: #fff; }
+.btn.primary:hover:not(:disabled)   { background: var(--primary-dark); }
+.btn.secondary:hover:not(:disabled) { background: #e6ede6; }
+.btn.danger:hover:not(:disabled)    { background: #9a3f3a; }
+.btn.btn-sm    { padding: 5px 11px; font-size: 0.8rem; }
+
+
+/* ==============================================
+   EduFocus — Auth page extras
+   ============================================== */
+.auth-links {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.demo-box {
+  margin-top: 18px;
+  padding: 12px 14px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  color: var(--muted);
+  border: 1px dashed #c8d4cc;
+  line-height: 1.7;
+}
+.demo-box strong { color: var(--ink); display: block; margin-bottom: 2px; }
+
+.notice.danger-note,
+.danger-note {
+  background: var(--red-soft);
+  color: var(--red);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+}
+.hidden { display: none !important; }
+
+/* ==============================================
+   EduFocus — Session type chooser
+   ============================================== */
+.session-type {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.session-choice {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 2px solid #d8e3dc;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition);
+}
+.session-choice:hover {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+.session-choice.selected {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+.session-choice strong {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.session-choice span {
+  font-size: 0.775rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
