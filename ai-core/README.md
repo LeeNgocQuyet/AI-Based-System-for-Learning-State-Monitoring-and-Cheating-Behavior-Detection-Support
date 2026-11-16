@@ -16,6 +16,8 @@ Raw signals theo `shared/schemas/raw-signals.schema.json`, có thời gian, số
 
 ## Phát triển ban đầu
 
-Đọc contract và mock raw-signals trước; đề xuất định nghĩa EAR/MAR, hệ trục head pose, nguồn thời gian và chất lượng tín hiệu. Chưa có CLI, dependencies hay inference để chạy. Không đặt ngưỡng tạo event ở module này.
+T03 có PoC MediaPipe Face Landmarker chạy cục bộ bằng OpenCV. Xem [khảo sát, cách chạy và benchmark T03](t03-report.md).
 
-Từ root, chạy kiểm tra nền tảng theo [README](../README.md). Xem [mock](../shared/examples/README.md) và [quy trình PR](../CONTRIBUTING.md). Schema còn DRAFT, cần Quyết + Huy + Phúc xác nhận. Module hiện chỉ có tài liệu; không có test ứng dụng để chạy.
+T15 đóng gói các phép đo T07 và T08 thành [AI Core v1 và hướng dẫn start/stop](raw-signals.md). Module xuất JSONL theo [contract nháp](../shared/schemas/README.md). Xem [mẫu đầu ra](../shared/examples/raw-signals.sample.jsonl). Ngưỡng tạo event thuộc Event Engine.
+
+T21 bổ sung [AI Core v2, phục hồi thiếu sáng và log điều kiện khó](raw-signals.md#t21--kiểm-tra-điều-kiện-khó).

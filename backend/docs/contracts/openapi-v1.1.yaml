@@ -1,0 +1,738 @@
+openapi: 3.1.0
+info:
+  title: Group 3 Learning Monitoring API
+  version: 1.1.0
+  description: >-
+    Unified API contract for the AI-Based System for Learning State Monitoring
+    and Cheating Behavior Detection Support (Group 3). Includes email/password
+    authentication, database-backed RBAC (LEARNER / INSTRUCTOR), instructor session
+    grants, event ingestion & normalization, session lifecycle control, and report APIs.
+    Real-time push notifications are supported via WebSocket endpoints:
+    /ws/sessions/{session_id} (Learner alerts) and /ws/teacher/live (Instructor live events).
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local demo server
+security:
+  - bearerAuth: []
+tags:
+  - name: Auth
+    description: Authentication, registration, token refresh, and account identity (S01, S02)
+  - name: Sessions
+    description: Session lifecycle management for learners (S04, S06, S08, S09)
+  - name: Events
+    description: Event ingestion from browser/AI and event querying (S06, S08, S11)
+  - name: Teacher
+    description: Instructor dashboard, session monitoring, and reports (S10, S11, S12)
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a learner account
+      operationId: registerLearner
+      description: >-
+        Public endpoint for S02. Strictly registers accounts with role LEARNER.
+        Any request attempting to supply extra properties, including role=INSTRUCTOR,
+        is rejected with 422 Unprocessable Entity.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Learner account created successfully; login is required separately.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in with email and password
+      operationId: login
+      description: >-
+        Public endpoint for S01. Verifies credentials and returns a short-lived access token
+        along with user profile (including role LEARNER or INSTRUCTOR). Sets an HttpOnly,
+        SameSite=Lax refresh token cookie. Wrong email/password returns a generic error to prevent enumeration.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authenticated successfully. Refresh token set in HttpOnly cookie.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              description: refresh_token cookie; Secure attribute required in production.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get the current authenticated user
+      operationId: getCurrentUser
+      description: Returns the verified database-backed role and public profile. Never returns password_hash or internal secrets.
+      responses:
+        '200':
+          description: Current user profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Rotate refresh token and issue a new access token
+      operationId: refreshAccessToken
+      description: Reads refresh_token from HttpOnly cookie, verifies it is active in database, revokes it, stores a new SHA-256 hash, and sets a new rotated cookie.
+      security:
+        - refreshCookie: []
+      responses:
+        '200':
+          description: Tokens refreshed; refresh cookie rotated.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Revoke refresh token and log out
+      operationId: logout
+      description: Revokes the refresh token in the database, clears the cookie (Max-Age=0), and instructs client to purge access token.
+      security:
+        - bearerAuth: []
+        - refreshCookie: []
+      responses:
+        '204':
+          description: Logged out successfully. Refresh cookie cleared.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /sessions:
+    post:
+      tags: [Sessions]
+      summary: Create a learning or exam session
+      description: >-
+        Learner-only. Backend derives learner_id from the authenticated account and assigns
+        session_id and started_at. The request body must not supply owner_id or learner_id.
+      operationId: createSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionCreate'
+            examples:
+              learning:
+                value: {session_type: LEARNING}
+              exam:
+                value: {session_type: EXAM}
+      responses:
+        '201':
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+
+  /sessions/mine:
+    get:
+      tags: [Sessions]
+      summary: List sessions belonging to the current learner
+      description: Student-only. Results are always strictly scoped to the authenticated user's learner_id.
+      operationId: listMySessions
+      parameters:
+        - $ref: '#/components/parameters/SessionType'
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Current learner's sessions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionListResponse'
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+
+  /teacher/sessions:
+    get:
+      tags: [Teacher]
+      summary: List sessions available to the authenticated instructor
+      description: Instructor-only. Results are strictly filtered through the instructor_session_access allow-list table.
+      operationId: listTeacherSessions
+      parameters:
+        - name: search
+          in: query
+          description: Case-insensitive search by learner name, email, or student code (S10 search).
+          schema: {type: string}
+        - $ref: '#/components/parameters/SessionType'
+        - name: status
+          in: query
+          schema: {$ref: '#/components/schemas/SessionStatus'}
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - name: event_severity
+          in: query
+          schema: {$ref: '#/components/schemas/Severity'}
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Sessions within the instructor's permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherSessionListResponse'
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+
+  /sessions/{session_id}:
+    parameters:
+      - $ref: '#/components/parameters/SessionId'
+    get:
+      tags: [Sessions]
+      summary: Get session details
+      description: Learners may read only their own session. Instructors may read only sessions with a valid grant.
+      operationId: getSession
+      responses:
+        '200':
+          description: Session details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /sessions/{session_id}/status:
+    parameters:
+      - $ref: '#/components/parameters/SessionId'
+    patch:
+      tags: [Sessions]
+      summary: Pause, resume, or end a session
+      description: >-
+        Session owner only. For LEARNING sessions, allowed transitions are ACTIVE <-> PAUSED
+        and ACTIVE/PAUSED -> ENDED. For EXAM sessions, PAUSED is strictly rejected (HTTP 400 EXAM_PAUSE_NOT_ALLOWED);
+        only ACTIVE -> ENDED is permitted. ENDED is terminal. Backend records transition timestamps and recalculates duration.
+      operationId: updateSessionStatus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionStatusUpdate'
+            examples:
+              pause: {value: {status: PAUSED}}
+              resume: {value: {status: ACTIVE}}
+              end: {value: {status: ENDED}}
+      responses:
+        '200':
+          description: Updated session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /sessions/{session_id}/events:
+    parameters:
+      - $ref: '#/components/parameters/SessionId'
+    post:
+      tags: [Events]
+      summary: Ingest one event for a session
+      description: >-
+        Accepts one event per request. The session_id in the JSON body must equal
+        the path parameter. Browser events are submitted by the session owner;
+        AI events are submitted by trusted AI services with matching serviceBearerAuth.
+        Backend validates producer identity, deduplicates by event_id, assigns received_at
+        and normalized severity, and creates a neutral display message.
+      operationId: ingestEvent
+      security:
+        - bearerAuth: []
+        - serviceBearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventIngest'
+            examples:
+              eyesClosed:
+                value:
+                  event_id: 9c2d08a4-6f33-4b9c-88c5-4139e474c201
+                  schema_version: 1.0.0
+                  session_id: 8d33d0e6-5b1a-4bc6-a4be-6d56e5f9d101
+                  event_type: EYES_CLOSED_LONG
+                  occurred_at: '2026-11-05T08:35:12.345Z'
+                  source: AI_LEARNING
+                  duration_ms: 4200
+                  confidence: 0.94
+                  metadata: {eye_closure_ms: 4200}
+              tabHidden:
+                value:
+                  event_id: 5bd52fe5-cb1e-48aa-94a1-5d431b1b7001
+                  schema_version: 1.0.0
+                  session_id: 8d33d0e6-5b1a-4bc6-a4be-6d56e5f9d102
+                  event_type: TAB_HIDDEN
+                  occurred_at: '2026-11-05T09:41:20.000Z'
+                  source: BROWSER
+                  duration_ms: 3200
+                  metadata: {visibility_state: hidden}
+      responses:
+        '201':
+          description: Event accepted and stored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+        '200':
+          description: Duplicate event_id; existing event returned (idempotent retry)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+    get:
+      tags: [Events]
+      summary: List events for a session
+      description: Available to the session owner for their own session, or an instructor with an explicit access grant.
+      operationId: listSessionEvents
+      parameters:
+        - name: event_type
+          in: query
+          schema: {$ref: '#/components/schemas/EventType'}
+        - name: severity
+          in: query
+          schema: {$ref: '#/components/schemas/Severity'}
+        - name: source
+          in: query
+          schema: {$ref: '#/components/schemas/EventSource'}
+        - name: is_reviewed
+          in: query
+          description: Filter by review status (S11 instructor review workflow).
+          schema: {type: boolean}
+        - name: from
+          in: query
+          description: Inclusive lower bound for occurred_at; RFC 3339 UTC.
+          schema: {type: string, format: date-time}
+        - name: to
+          in: query
+          description: Exclusive upper bound for occurred_at; RFC 3339 UTC.
+          schema: {type: string, format: date-time}
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Events ordered by occurred_at descending, then received_at descending
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventListResponse'
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /sessions/{session_id}/events/{event_id}/review:
+    parameters:
+      - $ref: '#/components/parameters/SessionId'
+      - name: event_id
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    patch:
+      tags: [Teacher]
+      summary: Mark an event as reviewed
+      description: Instructor-only. Changes is_reviewed to true and records reviewed_at timestamp (S11 review action).
+      operationId: reviewEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [is_reviewed]
+              properties:
+                is_reviewed: {type: boolean}
+      responses:
+        '200':
+          description: Event review status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /sessions/{session_id}/report:
+    parameters:
+      - $ref: '#/components/parameters/SessionId'
+    get:
+      tags: [Teacher]
+      summary: Get aggregated report for a session
+      description: Learners receive personal summary for their own session; instructors receive report when access grant exists.
+      operationId: getSessionReport
+      responses:
+        '200':
+          description: Aggregated session report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionReportResponse'
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: User access token. Role is read from token/account, never from request body.
+    serviceBearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token restricted to a trusted AI service and its permitted source values.
+    refreshCookie:
+      type: apiKey
+      in: cookie
+      name: refresh_token
+      description: Opaque refresh token cookie. HttpOnly, Secure in production, SameSite=Lax.
+  parameters:
+    SessionId:
+      name: session_id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    SessionType:
+      name: session_type
+      in: query
+      schema: {$ref: '#/components/schemas/SessionType'}
+    From:
+      name: from
+      in: query
+      description: Inclusive lower bound for started_at; RFC 3339 UTC.
+      schema: {type: string, format: date-time}
+    To:
+      name: to
+      in: query
+      description: Exclusive upper bound for started_at; RFC 3339 UTC.
+      schema: {type: string, format: date-time}
+    Page:
+      name: page
+      in: query
+      schema: {type: integer, minimum: 1, default: 1}
+    PageSize:
+      name: page_size
+      in: query
+      schema: {type: integer, minimum: 1, maximum: 100, default: 20}
+  schemas:
+    Role:
+      type: string
+      enum: [LEARNER, INSTRUCTOR]
+    RegisterRequest:
+      type: object
+      additionalProperties: false
+      required: [full_name, email, password]
+      properties:
+        full_name: {type: string, minLength: 1, maxLength: 120}
+        email: {type: string, format: email, maxLength: 320}
+        password: {type: string, minLength: 10, maxLength: 128}
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email: {type: string, format: email, maxLength: 320}
+        password: {type: string, minLength: 1, maxLength: 128}
+    UserPublic:
+      type: object
+      additionalProperties: false
+      required: [user_id, full_name, email, role, created_at]
+      properties:
+        user_id: {type: string, format: uuid}
+        full_name: {type: string, minLength: 1, maxLength: 120}
+        email: {type: string, format: email, maxLength: 320}
+        role: {$ref: '#/components/schemas/Role'}
+        created_at: {type: string, format: date-time}
+    UserResponse:
+      type: object
+      required: [data]
+      properties:
+        data: {$ref: '#/components/schemas/UserPublic'}
+    AuthTokenData:
+      type: object
+      additionalProperties: false
+      required: [access_token, token_type, expires_in, user]
+      properties:
+        access_token: {type: string, description: Short-lived access token.}
+        token_type: {type: string, example: bearer}
+        expires_in: {type: integer, minimum: 1, example: 900}
+        user: {$ref: '#/components/schemas/UserPublic'}
+    AuthTokenResponse:
+      type: object
+      required: [data]
+      properties:
+        data: {$ref: '#/components/schemas/AuthTokenData'}
+    SessionType:
+      type: string
+      enum: [LEARNING, EXAM]
+    SessionStatus:
+      type: string
+      enum: [ACTIVE, PAUSED, ENDED]
+    EventType:
+      type: string
+      enum: [EYES_CLOSED_LONG, YAWN_DETECTED, HEAD_NOD_DETECTED, LOOK_AWAY_DETECTED, FACE_NOT_DETECTED, MULTIPLE_FACES_DETECTED, PHONE_DETECTED, TAB_HIDDEN, CAMERA_LOST, CONNECTION_LOST]
+    EventSource:
+      type: string
+      enum: [AI_LEARNING, AI_EXAM, BROWSER, SYSTEM]
+    Severity:
+      type: string
+      enum: [INFO, LOW, MEDIUM, HIGH]
+    SessionCreate:
+      type: object
+      additionalProperties: false
+      required: [session_type]
+      properties:
+        session_type: {$ref: '#/components/schemas/SessionType'}
+    SessionStatusUpdate:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status: {$ref: '#/components/schemas/SessionStatus'}
+    Session:
+      type: object
+      additionalProperties: false
+      required: [session_id, session_type, status, started_at, ended_at, duration_ms]
+      properties:
+        session_id: {type: string, format: uuid}
+        session_type: {$ref: '#/components/schemas/SessionType'}
+        status: {$ref: '#/components/schemas/SessionStatus'}
+        started_at: {type: string, format: date-time}
+        ended_at: {type: [string, 'null'], format: date-time}
+        duration_ms: {type: [integer, 'null'], minimum: 0, description: Active monitoring time calculated by Backend; paused intervals are excluded.}
+    EventIngest:
+      type: object
+      additionalProperties: false
+      required: [event_id, schema_version, session_id, event_type, occurred_at, source]
+      properties:
+        event_id: {type: string, format: uuid}
+        schema_version: {type: string, const: '1.0.0'}
+        session_id: {type: string, format: uuid}
+        event_type: {$ref: '#/components/schemas/EventType'}
+        occurred_at: {type: string, format: date-time, description: RFC 3339 UTC timestamp with Z suffix.}
+        source: {$ref: '#/components/schemas/EventSource'}
+        duration_ms: {type: integer, minimum: 0}
+        confidence: {type: number, minimum: 0, maximum: 1, description: AI confidence only; omit for browser/system events.}
+        metadata: {type: object, additionalProperties: true}
+      allOf:
+        - if: {properties: {event_type: {const: TAB_HIDDEN}}, required: [event_type]}
+          then: {properties: {source: {const: BROWSER}}}
+        - if: {properties: {event_type: {enum: [EYES_CLOSED_LONG, YAWN_DETECTED, HEAD_NOD_DETECTED]}}, required: [event_type]}
+          then: {properties: {source: {const: AI_LEARNING}}}
+        - if: {properties: {event_type: {enum: [MULTIPLE_FACES_DETECTED, PHONE_DETECTED]}}, required: [event_type]}
+          then: {properties: {source: {const: AI_EXAM}}}
+        - if: {properties: {event_type: {enum: [LOOK_AWAY_DETECTED, FACE_NOT_DETECTED]}}, required: [event_type]}
+          then: {properties: {source: {enum: [AI_LEARNING, AI_EXAM]}}}
+        - if: {properties: {event_type: {const: CAMERA_LOST}}, required: [event_type]}
+          then: {properties: {source: {const: BROWSER}}}
+        - if: {properties: {event_type: {const: CONNECTION_LOST}}, required: [event_type]}
+          then: {properties: {source: {const: SYSTEM}}}
+    EventRecord:
+      type: object
+      additionalProperties: false
+      required: [event_id, schema_version, session_id, event_type, occurred_at, received_at, source, severity, message]
+      properties:
+        event_id: {type: string, format: uuid}
+        schema_version: {type: string, const: '1.0.0'}
+        session_id: {type: string, format: uuid}
+        event_type: {$ref: '#/components/schemas/EventType'}
+        occurred_at: {type: string, format: date-time}
+        received_at: {type: string, format: date-time}
+        source: {$ref: '#/components/schemas/EventSource'}
+        severity: {$ref: '#/components/schemas/Severity'}
+        duration_ms: {type: integer, minimum: 0}
+        confidence: {type: number, minimum: 0, maximum: 1}
+        message: {type: string, maxLength: 500}
+        is_reviewed: {type: boolean, default: false}
+        reviewed_at: {type: [string, 'null'], format: date-time}
+        metadata: {type: object, additionalProperties: true}
+    SessionResponse:
+      type: object
+      required: [data]
+      properties:
+        data: {$ref: '#/components/schemas/Session'}
+    EventResponse:
+      type: object
+      required: [data]
+      properties:
+        data: {$ref: '#/components/schemas/EventRecord'}
+    SessionListResponse:
+      type: object
+      required: [data, page, page_size, total]
+      properties:
+        data: {type: array, items: {$ref: '#/components/schemas/Session'}}
+        page: {type: integer}
+        page_size: {type: integer}
+        total: {type: integer}
+    TeacherSession:
+      type: object
+      additionalProperties: false
+      required: [session_id, session_type, status, started_at, ended_at, duration_ms, learner_id, learner_display_name, event_count, high_severity_count]
+      properties:
+        session_id: {type: string, format: uuid}
+        session_type: {$ref: '#/components/schemas/SessionType'}
+        status: {$ref: '#/components/schemas/SessionStatus'}
+        started_at: {type: string, format: date-time}
+        ended_at: {type: [string, 'null'], format: date-time}
+        duration_ms: {type: [integer, 'null'], minimum: 0}
+        learner_id: {type: string, format: uuid}
+        learner_display_name: {type: string}
+        event_count: {type: integer, minimum: 0}
+        high_severity_count: {type: integer, minimum: 0}
+    TeacherSessionListResponse:
+      type: object
+      required: [data, page, page_size, total]
+      properties:
+        data: {type: array, items: {$ref: '#/components/schemas/TeacherSession'}}
+        page: {type: integer}
+        page_size: {type: integer}
+        total: {type: integer}
+    EventListResponse:
+      type: object
+      required: [data, page, page_size, total]
+      properties:
+        data: {type: array, items: {$ref: '#/components/schemas/EventRecord'}}
+        page: {type: integer}
+        page_size: {type: integer}
+        total: {type: integer}
+    SessionReport:
+      type: object
+      required: [session_id, session_type, status, started_at, ended_at, duration_ms, event_count, counts_by_type, counts_by_severity]
+      properties:
+        session_id: {type: string, format: uuid}
+        session_type: {$ref: '#/components/schemas/SessionType'}
+        status: {$ref: '#/components/schemas/SessionStatus'}
+        started_at: {type: string, format: date-time}
+        ended_at: {type: [string, 'null'], format: date-time}
+        duration_ms: {type: [integer, 'null'], minimum: 0}
+        event_count: {type: integer, minimum: 0}
+        counts_by_type:
+          type: object
+          additionalProperties: {type: integer, minimum: 0}
+        counts_by_severity:
+          type: object
+          additionalProperties: {type: integer, minimum: 0}
+    SessionReportResponse:
+      type: object
+      required: [data]
+      properties:
+        data: {$ref: '#/components/schemas/SessionReport'}
+    ApiError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: {type: string}
+            message: {type: string}
+            details: {type: object, additionalProperties: true}
+  responses:
+    BadRequest:
+      description: Invalid state transition or malformed request
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/ApiError'}
+    Unauthorized:
+      description: Missing or invalid authentication
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/ApiError'}
+    Forbidden:
+      description: Authenticated account has insufficient permission
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/ApiError'}
+    NotFound:
+      description: Session or event not found within the caller's permitted scope
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/ApiError'}
+    Conflict:
+      description: Conflicting event_id or invalid session state
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/ApiError'}
+    ValidationError:
+      description: Request body failed schema or business validation
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/ApiError'}
+    TooManyRequests:
+      description: Rate limit exceeded; retry after the indicated interval.
+      headers:
+        Retry-After:
+          schema: {type: integer}
+          description: Seconds until requests may resume.
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/ApiError'}
