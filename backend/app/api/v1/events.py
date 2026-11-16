@@ -13,6 +13,7 @@ from app.db.session import get_db
 from app.models import Event, User
 from app.models.enums import EventSource, EventType, Severity
 from app.schemas.event import EventIngest, EventListOut, EventOut, EventResponse
+from app.services.alert_service import publish_event
 from app.services.event_service import ingest_event, list_session_events
 from app.services.session_service import as_utc
 
@@ -38,8 +39,14 @@ def to_event_out(entity: Event) -> EventOut:
     )
 
 
-@router.post("", response_model=EventResponse, status_code=status.HTTP_201_CREATED, responses={200: {"model": EventResponse, "description": "Exact idempotent retry; existing event returned"}}, summary="Ingest one event")
-def post_event(
+@router.post(
+    "",
+    response_model=EventResponse,
+    status_code=status.HTTP_201_CREATED,
+    responses={200: {"model": EventResponse, "description": "Exact idempotent retry; existing event returned"}},
+    summary="Ingest one event",
+)
+async def post_event(
     session_id: UUID,
     payload: EventIngest,
     response: Response,
@@ -49,6 +56,14 @@ def post_event(
     entity, duplicate = ingest_event(db, session_id, payload, principal)
     if duplicate:
         response.status_code = status.HTTP_200_OK
+    else:
+        # ingest_event commits to PostgreSQL before publishing to live clients.
+        # Cooldown affects alert.triggered only; event.created is never suppressed.
+        await publish_event(
+            db=db,
+            event=entity,
+            event_payload=to_event_out(entity).model_dump(mode="json"),
+        )
     return {"data": to_event_out(entity)}
 
 
@@ -68,5 +83,8 @@ def get_events(
     if from_dt and to_dt and from_dt >= to_dt:
         from fastapi import HTTPException
         raise HTTPException(status_code=422, detail="from must be earlier than to")
-    items, total = list_session_events(db, session_id, principal, event_type, severity, source, from_dt, to_dt, page, page_size)
+    items, total = list_session_events(
+        db, session_id, principal, event_type, severity, source,
+        from_dt, to_dt, page, page_size,
+    )
     return {"data": [to_event_out(item) for item in items], "page": page, "page_size": page_size, "total": total}

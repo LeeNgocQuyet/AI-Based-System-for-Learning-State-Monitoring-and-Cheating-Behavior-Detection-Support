@@ -29,6 +29,7 @@ class Settings:
     jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "HS256")
     access_token_minutes: int = int(os.getenv("ACCESS_TOKEN_MINUTES", "15"))
     service_token_minutes: int = int(os.getenv("SERVICE_TOKEN_MINUTES", "60"))
+    alert_cooldown_seconds: int = int(os.getenv("ALERT_COOLDOWN_SECONDS", "15"))
     enable_phone_detection: bool = os.getenv("ENABLE_PHONE_DETECTION", "false").lower() == "true"
     cors_origins: tuple[str, ...] = tuple(
         origin.strip() for origin in os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173").split(",") if origin.strip()
@@ -39,6 +40,8 @@ settings = Settings()
 
 
 def validate_settings() -> None:
+    if settings.alert_cooldown_seconds < 0:
+        raise RuntimeError("ALERT_COOLDOWN_SECONDS must be zero or greater")
     is_prod = settings.environment.lower() in {"production", "prod"}
     if is_prod:
         raw_secret = os.getenv("JWT_SECRET", "").strip()

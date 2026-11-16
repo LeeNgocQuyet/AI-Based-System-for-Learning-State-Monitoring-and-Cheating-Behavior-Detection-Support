@@ -1,12 +1,12 @@
-# Backend Architecture, Session/Event API & Seed Data v1.2 — Nhóm 3
+# Backend Architecture, Session/Event API, Realtime WebSocket & Seed Data v1.3 — Nhóm 3
 
 **Đề tài:** Thiết kế và phát triển hệ thống giám sát trạng thái học tập và hỗ trợ phát hiện hành vi gian lận dựa trên trí tuệ nhân tạo.
 
-**Phiên bản:** Release v1.2.0 — Triển khai hoàn chỉnh FastAPI Service, Session Lifecycle API, Event Ingestion/Query API, Postman Test Suite, và Dữ liệu Mock Seeding phục vụ Frontend phát triển độc lập.
+**Phiên bản:** Release v1.3.0 — Triển khai hoàn chỉnh FastAPI Service, Session Lifecycle API, Event Ingestion/Query API, Realtime WebSocket Event Stream & Alert Service, Cooldown Policy, Session Report mở rộng, Postman Test Suite, và Dữ liệu Mock Seeding phục vụ Frontend phát triển độc lập.
 
 ---
 
-## 1. Cấu trúc thư mục Backend v1.2
+## 1. Cấu trúc thư mục Backend v1.3
 
 Thư mục `backend/` được tổ chức theo chuẩn kiến trúc phân tầng (Clean Architecture / Layered Pattern):
 
@@ -14,13 +14,14 @@ Thư mục `backend/` được tổ chức theo chuẩn kiến trúc phân tần
 backend/
 ├── app/                           # Mã nguồn chính ứng dụng FastAPI
 │   ├── main.py                    # Entry point khởi tạo FastAPI app, middleware CORS, định tuyến
-│   ├── api/v1/                    # Tầng Controller / Endpoints (Sessions, Events, Teacher)
+│   ├── api/v1/                    # Tầng Controller / Endpoints (Sessions, Events, Teacher, WebSocket)
 │   │   ├── sessions.py            # API tạo phiên, pause, resume, end, xem chi tiết và báo cáo
-│   │   ├── events.py              # API ingest sự kiện (idempotent) và query sự kiện
+│   │   ├── events.py              # API ingest sự kiện (idempotent, publish realtime) và query sự kiện
 │   │   ├── teacher.py             # API danh sách phiên dành cho Giảng viên (grant scope)
+│   │   ├── websocket.py           # Realtime WebSocket channels cho Learner và Teacher
 │   │   └── router.py              # Gom các router API v1
 │   ├── core/                      # Cấu hình bảo mật, JWT dependencies, Settings
-│   │   ├── config.py              # Pydantic Settings đọc biến môi trường
+│   │   ├── config.py              # Pydantic Settings đọc biến môi trường (bao gồm ALERT_COOLDOWN_SECONDS)
 │   │   ├── dependencies.py        # Dependency injection xác thực Token (Learner/Instructor/Service)
 │   │   └── security.py            # Logic mã hóa mật khẩu và decode/encode JWT token
 │   ├── db/                        # Kết nối cơ sở dữ liệu SQLAlchemy 2.0
@@ -32,12 +33,16 @@ backend/
 │   │   ├── session.py             # Model LearningSession (tính duration, ràng buộc state)
 │   │   ├── event.py               # Model Event (idempotency, severity, message, is_reviewed)
 │   │   └── instructor_access.py   # Model InstructorSessionAccess (allow-list grants)
+│   ├── realtime/                  # Quản lý kết nối WebSocket và phát tán sự kiện
+│   │   ├── __init__.py
+│   │   └── manager.py             # In-memory RealtimeConnectionManager (session & teacher broadcast)
 │   ├── schemas/                   # Pydantic Schemas xác thực DTO Request/Response
-│   │   ├── session.py             # Schema SessionCreate, SessionOut, SessionReport
+│   │   ├── session.py             # Schema SessionCreate, SessionOut, SessionReportOut (v1.3 fields)
 │   │   └── event.py               # Schema EventIngest (validate UTC, source mapping), EventOut
 │   └── services/                  # Business Logic Layer
 │       ├── session_service.py     # Quản lý vòng đời phiên, tính thời lượng active, RBAC scope
-│       └── event_service.py       # Ingest sự kiện, chuẩn hóa severity demo, deduplication
+│       ├── event_service.py       # Ingest sự kiện, deduplication, build session report mở rộng
+│       └── alert_service.py       # Presentation-only Alert Cooldown service & event publisher
 ├── database/                      # DDL khởi tạo cơ sở dữ liệu PostgreSQL
 │   ├── schema-v1.sql              # Schema DDL chuẩn: users, sessions, events, grants, refresh_tokens
 │   ├── seed_instructor.py         # Script khởi tạo tài khoản Giảng viên với Argon2id
@@ -52,13 +57,15 @@ backend/
 │   └── environment.template.json  # Postman Environment Template mẫu
 ├── seed/                          # Dữ liệu Mock tĩnh cho Frontend
 │   └── frontend-mock-sessions.json # Response fixtures tĩnh giúp Frontend phát triển độc lập
-├── tests/                         # Bộ kiểm thử tự động pytest (19/19 test cases)
+├── tests/                         # Bộ kiểm thử tự động pytest (25/25 test cases)
 │   ├── conftest.py                # Fixtures SQLite in-memory, mock JWT credentials
 │   ├── test_sessions.py           # Unit tests kiểm thử vòng đời phiên và RBAC
-│   └── test_events.py             # Unit tests kiểm thử event ingest, idempotency, source spoofing
+│   ├── test_events.py             # Unit tests kiểm thử event ingest, idempotency, source spoofing
+│   └── test_realtime_alerts.py    # Tests kiểm thử WebSocket realtime channels, cooldown và grant filter
 ├── docs/                          # Tài liệu kỹ thuật tham chiếu
 │   ├── openapi-session-event-v1.2.json # OpenAPI 3.1 JSON sinh trực tiếp từ FastAPI
-│   └── api-contract-delta-v1.2.md      # Chi tiết các delta cải tiến v1.2
+│   ├── api-contract-delta-v1.2.md      # Chi tiết các delta cải tiến v1.2
+│   └── api-contract-delta-v1.3.md      # Chi tiết API Contract Delta v1.3 (WebSocket, Cooldown, Report)
 ├── Dockerfile                     # Đóng gói container ứng dụng Backend
 ├── docker-compose.yml             # Khởi chạy trọn gói PostgreSQL 15 + API + Auto Seed
 ├── requirements.txt               # Thư viện runtime (FastAPI, SQLAlchemy, psycopg, PyJWT, pydantic)
@@ -69,7 +76,7 @@ backend/
 
 ---
 
-## 2. Các chức năng Session/Event API cốt lõi (v1.2)
+## 2. Các chức năng Session/Event API cốt lõi
 
 ### 2.1. Quản lý Vòng đời Phiên (Session Lifecycle)
 - **Tạo và bắt đầu phiên (`POST /api/v1/sessions`):**
@@ -93,14 +100,45 @@ backend/
     - Token người học chỉ được gửi sự kiện `source: BROWSER` (`TAB_HIDDEN`, `CAMERA_LOST`) cho chính phiên của mình.
     - Token AI Service chỉ được phát sự kiện khớp với quyền được cấp (`AI_LEARNING` vào phiên `LEARNING`, `AI_EXAM` vào phiên `EXAM`).
   - **Chuẩn hóa tự động:** Backend tự động gán `received_at`, thông điệp trung tính và mức độ `severity` (`INFO`, `LOW`, `MEDIUM`, `HIGH`).
+  - **Realtime Broadcast:** Sau khi commit vào database, sự kiện được broadcast qua WebSocket tới người học và giảng viên có grant.
 - **Truy vấn sự kiện (`GET /api/v1/sessions/{session_id}/events`):**
   - Cho phép người học (xem phiên của mình) và giảng viên (xem phiên có grant) tra cứu danh sách sự kiện kèm bộ lọc theo loại, mức độ, nguồn, thời gian.
-- **Báo cáo thống kê phiên (`GET /api/v1/sessions/{session_id}/report`):**
-  - Tổng hợp số lượng sự kiện theo từng loại (`counts_by_type`) và theo mức độ nghiêm trọng (`counts_by_severity`).
 
 ---
 
-## 3. Dữ liệu Mock phục vụ Frontend phát triển độc lập
+## 3. Realtime Event Stream, Alert Service & Session Report (v1.3)
+
+### 3.1. Kênh WebSocket
+- **Learner:** `/api/v1/ws/sessions/{session_id}?token=<learner_access_token>`. Chỉ chủ phiên được kết nối.
+- **Instructor:** `/api/v1/ws/teacher/live?token=<instructor_access_token>`. Chỉ instructor được kết nối; mỗi event chỉ được phân phối cho instructor có grant tương ứng.
+- Client gửi text `ping` để nhận JSON `{"type":"pong"}`.
+
+### 3.2. Hai loại message
+- `event.created`: phát cho mọi event mới sau khi DB commit; không bị cooldown.
+- `alert.triggered`: thông báo UI có severity khác `INFO`; chịu cooldown theo `(session_id, event_type)`.
+
+Mặc định local demo là 15 giây, cấu hình bằng `ALERT_COOLDOWN_SECONDS`. Cooldown chỉ giới hạn thông báo giao diện, không xóa hoặc bỏ qua event trong Database.
+
+### 3.3. Tách trách nhiệm debounce/cooldown
+- **Huy:** debounce raw signal và quản lý onset/offset ở Event Engine.
+- **Phúc:** lưu mọi event hợp lệ, phát event stream và cooldown riêng cho UI alert (tránh double debounce giữa rule engine và backend).
+- **Nam:** hiển thị event timeline và alert message; không tự debounce dữ liệu đã được Backend lưu.
+
+### 3.4. Session report mở rộng
+`GET /api/v1/sessions/{session_id}/report` tổng hợp từ toàn bộ bản ghi `events`, bổ sung:
+- `counts_by_source`: đếm theo nguồn (`AI_LEARNING`, `AI_EXAM`, `BROWSER`, `SYSTEM`).
+- `alert_eligible_count`: số sự kiện có severity khác `INFO` (lưu ý: không phải số alert thực tế đã gửi sau cooldown).
+- `reviewed_count`: số sự kiện đã được đánh dấu xem xét.
+- `first_event_at`, `last_event_at`: mốc thời gian sự kiện đầu tiên và cuối cùng.
+
+### 3.5. Giới hạn MVP
+WebSocket manager và cooldown state chạy trong memory của một API process; MVP chạy một Uvicorn worker. Event vẫn bền vững trong PostgreSQL. Sau reconnect, Frontend dùng REST `GET /sessions/{id}/events` để truy hồi. Khi scale nhiều worker/container, cần Redis Pub/Sub hoặc bộ điều phối dùng chung.
+
+Chi tiết envelope, reconnect, bảo mật và test: [docs/api-contract-delta-v1.3.md](docs/api-contract-delta-v1.3.md).
+
+---
+
+## 4. Dữ liệu Mock phục vụ Frontend phát triển độc lập
 
 Frontend có thể phát triển hoàn toàn độc lập thông qua 2 phương án:
 
@@ -115,7 +153,7 @@ Frontend có thể phát triển hoàn toàn độc lập thông qua 2 phương 
 
 ---
 
-## 4. Hướng dẫn Khởi chạy & Kiểm thử
+## 5. Hướng dẫn Khởi chạy & Kiểm thử
 
 ### Cách 1: Khởi chạy nhanh bằng Docker Compose (Khuyên dùng)
 ```bash
@@ -153,7 +191,7 @@ uvicorn app.main:app --reload --port 8000
 
 ---
 
-## 5. Kiểm thử qua Postman & Swagger
+## 6. Kiểm thử qua Postman & Swagger
 
 ### Bước 1: Phát Token kiểm thử
 Khi chưa kết nối module Auth tập trung, sử dụng script phát Token nội bộ:
@@ -184,4 +222,6 @@ python scripts/issue_service_token.py --service ai-exam
 ```bash
 pytest
 ```
-Bộ kiểm thử gồm 19 test cases tự động chạy trên SQLite in-memory, kiểm chứng đầy đủ tính đúng đắn của logic vòng đời phiên, chống gian lận nguồn phát, cơ chế retry idempotent và ma trận phân quyền RBAC.
+Bộ kiểm thử gồm **25 test cases** tự động chạy trên SQLite in-memory:
+- 19 test cases Session Lifecycle, Event Ingestion, Idempotency, RBAC.
+- 6 test cases Realtime WebSocket streams, Teacher Live Grant Filtering, Presentation Cooldown Policy độc lập với Database & Event stream.

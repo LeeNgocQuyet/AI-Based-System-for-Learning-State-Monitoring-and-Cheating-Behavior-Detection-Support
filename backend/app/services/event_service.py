@@ -175,10 +175,19 @@ def build_session_report(db: Session, session: LearningSession) -> dict:
     events = db.scalars(select(Event).where(Event.session_id == session.session_id)).all()
     counts_by_type: dict[str, int] = {}
     counts_by_severity = {severity.value: 0 for severity in Severity}
+    counts_by_source = {source.value: 0 for source in EventSource}
+    reviewed_count = 0
+    alert_eligible_count = 0
+
     for event in events:
         counts_by_type[event.event_type.value] = counts_by_type.get(event.event_type.value, 0) + 1
         counts_by_severity[event.severity.value] += 1
+        counts_by_source[event.source.value] += 1
+        reviewed_count += int(bool(event.is_reviewed))
+        alert_eligible_count += int(event.severity != Severity.INFO)
+
     from app.services.session_service import session_duration_ms
+    event_times = [as_utc(event.occurred_at) for event in events]
     return {
         "session_id": session.session_id,
         "session_type": session.session_type,
@@ -189,4 +198,9 @@ def build_session_report(db: Session, session: LearningSession) -> dict:
         "event_count": len(events),
         "counts_by_type": counts_by_type,
         "counts_by_severity": counts_by_severity,
+        "counts_by_source": counts_by_source,
+        "alert_eligible_count": alert_eligible_count,
+        "reviewed_count": reviewed_count,
+        "first_event_at": min(event_times) if event_times else None,
+        "last_event_at": max(event_times) if event_times else None,
     }

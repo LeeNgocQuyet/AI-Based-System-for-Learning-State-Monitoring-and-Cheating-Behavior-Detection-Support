@@ -68,6 +68,11 @@ class SessionReportOut(BaseModel):
     event_count: int
     counts_by_type: dict[str, int]
     counts_by_severity: dict[str, int]
+    counts_by_source: dict[str, int]
+    alert_eligible_count: int
+    reviewed_count: int
+    first_event_at: datetime | None = None
+    last_event_at: datetime | None = None
 
 
 class SessionReportResponse(BaseModel):
@@ -76,4 +81,3 @@ class SessionReportResponse(BaseModel):
 
 class SessionResponse(BaseModel):
     data: SessionOut
-
