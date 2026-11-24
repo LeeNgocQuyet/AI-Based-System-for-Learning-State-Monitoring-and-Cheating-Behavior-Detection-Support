@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Annotated
 from uuid import UUID
 
@@ -15,6 +16,7 @@ from app.realtime.manager import connection_manager
 from app.services.session_service import get_accessible_session
 
 router = APIRouter(tags=["Realtime WebSocket"])
+logger = logging.getLogger(__name__)
 
 
 def _principal_from_query_token(token: str, db: Session) -> User | ServicePrincipal:
@@ -32,28 +34,37 @@ async def learner_session_stream(
 ):
     if not token:
         await websocket.close(code=1008, reason="Authentication required")
+        logger.warning("websocket.rejected channel=session session_id=%s reason=missing_token", session_id)
         return
 
     try:
         principal = _principal_from_query_token(token, db)
     except HTTPException:
         await websocket.close(code=1008, reason="Invalid or expired token")
+        logger.warning("websocket.rejected channel=session session_id=%s reason=invalid_token", session_id)
         return
 
     if not isinstance(principal, User) or principal.role != UserRole.LEARNER:
         await websocket.close(code=1008, reason="Learner role required")
+        logger.warning("websocket.rejected channel=session session_id=%s reason=role_denied", session_id)
         return
 
     try:
         get_accessible_session(db, session_id, principal)
     except HTTPException:
         await websocket.close(code=1008, reason="Session is not accessible")
+        logger.warning(
+            "websocket.rejected channel=session session_id=%s user_id=%s reason=scope_denied",
+            session_id,
+            principal.user_id,
+        )
         return
 
     # Do not keep a DB transaction open for the lifetime of the socket.
     db.rollback()
     await websocket.accept()
     connection_manager.connect_session(session_id, websocket)
+    logger.info("websocket.connected channel=session session_id=%s user_id=%s", session_id, principal.user_id)
     await websocket.send_json({
         "type": "connection.ready",
         "channel": "session",
@@ -67,7 +78,7 @@ async def learner_session_stream(
             if incoming.strip().lower() == "ping":
                 await websocket.send_json({"type": "pong"})
     except WebSocketDisconnect:
-        pass
+        logger.info("websocket.disconnected channel=session session_id=%s user_id=%s", session_id, principal.user_id)
     finally:
         connection_manager.disconnect_session(session_id, websocket)
 
@@ -80,21 +91,25 @@ async def instructor_live_stream(
 ):
     if not token:
         await websocket.close(code=1008, reason="Authentication required")
+        logger.warning("websocket.rejected channel=teacher reason=missing_token")
         return
 
     try:
         principal = _principal_from_query_token(token, db)
     except HTTPException:
         await websocket.close(code=1008, reason="Invalid or expired token")
+        logger.warning("websocket.rejected channel=teacher reason=invalid_token")
         return
 
     if not isinstance(principal, User) or principal.role != UserRole.INSTRUCTOR:
         await websocket.close(code=1008, reason="Instructor role required")
+        logger.warning("websocket.rejected channel=teacher reason=role_denied")
         return
 
     db.rollback()
     await websocket.accept()
     connection_manager.connect_teacher(principal.user_id, websocket)
+    logger.info("websocket.connected channel=teacher user_id=%s", principal.user_id)
     await websocket.send_json({
         "type": "connection.ready",
         "channel": "teacher",
@@ -108,6 +123,6 @@ async def instructor_live_stream(
             if incoming.strip().lower() == "ping":
                 await websocket.send_json({"type": "pong"})
     except WebSocketDisconnect:
-        pass
+        logger.info("websocket.disconnected channel=teacher user_id=%s", principal.user_id)
     finally:
         connection_manager.disconnect_teacher(principal.user_id, websocket)

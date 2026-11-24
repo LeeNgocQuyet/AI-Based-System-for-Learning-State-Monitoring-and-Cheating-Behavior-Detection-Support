@@ -28,6 +28,12 @@ Các file tại `shared/examples/` chỉ là mẫu contract, không phải chu�
 - Event mock đang biểu diễn khoảng đã kết thúc; cơ chế start/update/end realtime vẫn cần chốt, chưa được schema này bảo đảm.
 - Huy xử lý debounce/nhiễu và vòng đời rule; Phúc giới hạn tần suất thông báo hiển thị. Lưu event và hiển thị cảnh báo là hai việc khác nhau, không được vô tình xóa bằng chứng chỉ vì cooldown UI.
 
+## Event stream và UI alert — ranh giới cooldown
+
+Backend phát `event.created` cho mọi event đã commit và chỉ phát `alert.triggered` theo cooldown hiển thị. Huy chịu trách nhiệm debounce raw signals/rule lifecycle trong Event Engine; Phúc không debounce và không loại bỏ event lưu trữ. Cooldown chỉ tác động thông báo giao diện. Event timeline và report luôn đọc từ bảng `events`.
+
+MVP dùng in-memory WebSocket connection manager và cooldown state, do đó cần chạy một API worker. Khi mở rộng nhiều worker/container, cần chuyển fan-out và cooldown state sang Redis Pub/Sub hoặc hạ tầng dùng chung.
+
 ## Cần thống nhất
 
 Vị trí chạy AI, cách truyền hình ảnh, nguồn clock, cấu hình extraction, hệ trục, retention và transport đều chưa chốt. Mặc định thiết kế hướng tối thiểu hóa dữ liệu; không đưa ảnh/video/landmarks nhận diện vào event payload. Xem [các quyết định mở](../decisions-pending.md).
