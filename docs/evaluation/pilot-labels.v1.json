@@ -1,0 +1,65 @@
+{
+  "dataset_version": "pilot-v1",
+  "annotation_round": 1,
+  "annotator": "Nguyen Duc Huy",
+  "storage_location": "Google Drive (Restricted - Group 3 Internal)",
+  "clips": [
+    {
+      "clip_id": "pilot_p01_one_take",
+      "participant_id": "P01",
+      "duration_ms": 123168,
+      "ground_truth_events": [
+        {
+          "event_type": "EYES_CLOSED",
+          "start_offset_ms": 18528,
+          "end_offset_ms": 22256,
+          "duration_ms": 3728
+        },
+        {
+          "event_type": "MOUTH_OPEN",
+          "start_offset_ms": 29920,
+          "end_offset_ms": 34224,
+          "duration_ms": 4304
+        },
+        {
+          "event_type": "HEAD_TURNED",
+          "start_offset_ms": 38128,
+          "end_offset_ms": 42784,
+          "duration_ms": 4656
+        },
+        {
+          "event_type": "FACE_NOT_DETECTED",
+          "start_offset_ms": 47760,
+          "end_offset_ms": 56720,
+          "duration_ms": 8960
+        },
+        {
+          "event_type": "MULTIPLE_FACES",
+          "start_offset_ms": 69024,
+          "end_offset_ms": 73456,
+          "duration_ms": 4432
+        }
+      ],
+      "negative_control_segments": [
+        {
+          "event_type": "NEG_TALKING",
+          "start_offset_ms": 79648,
+          "end_offset_ms": 86320,
+          "duration_ms": 6672
+        },
+        {
+          "event_type": "NEG_LOOKING_DOWN",
+          "start_offset_ms": 87984,
+          "end_offset_ms": 93328,
+          "duration_ms": 5344
+        },
+        {
+          "event_type": "NEG_LOW_LIGHT",
+          "start_offset_ms": 100656,
+          "end_offset_ms": 108176,
+          "duration_ms": 7520
+        }
+      ]
+    }
+  ]
+}
