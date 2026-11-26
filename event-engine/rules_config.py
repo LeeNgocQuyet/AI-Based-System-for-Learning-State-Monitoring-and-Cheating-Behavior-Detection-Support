@@ -11,6 +11,8 @@ class TemporalRuleConfig:
 
 @dataclass
 class EngineConfig:
+    engine_version: str = "1.0.0"
+
     # Hệ số làm mượt EMA (0 < alpha <= 1)
     ema_alpha: float = 0.4
     # Thời gian chịu đựng khi mất landmarks thoáng qua (giây)
